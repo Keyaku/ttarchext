@@ -8,8 +8,8 @@ The following is a small explanation from the website author:
 
 Here is Bruce Schneier's code in C for his Blowfish algorithm. This version is fully ANSI compliant and contains the "missing" P-box values omitted from the book.
 ...
-This code may be freely distributed. 
-Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the code for readDataLine(). 
+This code may be freely distributed.
+Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the code for readDataLine().
 */
 
 
@@ -47,66 +47,64 @@ unsigned long F(blf_ctx *bc, unsigned long x)
 
 void Blowfish_encipher(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 {
-   unsigned long  Xl;
-   unsigned long  Xr;
-   unsigned long  temp;
-   short          i;
+	unsigned long  Xl;
+	unsigned long  Xr;
+	unsigned long  temp;
+	short          i;
 
-   Xl = *xl;
-   Xr = *xr;
+	Xl = *xl;
+	Xr = *xr;
 
-   for (i = 0; i < N; ++i)
-   {
-      Xl = Xl ^ bc->P[i];
-      Xr = F(bc, Xl) ^ Xr;
+	for (i = 0; i < N; ++i) {
+		Xl = Xl ^ bc->P[i];
+		Xr = F(bc, Xl) ^ Xr;
 
-      temp = Xl;
-      Xl = Xr;
-      Xr = temp;
-   }
+		temp = Xl;
+		Xl = Xr;
+		Xr = temp;
+	}
 
-   temp = Xl;
-   Xl = Xr;
-   Xr = temp;
+	temp = Xl;
+	Xl = Xr;
+	Xr = temp;
 
-   Xr = Xr ^ bc->P[N];
-   Xl = Xl ^ bc->P[N + 1];
+	Xr = Xr ^ bc->P[N];
+	Xl = Xl ^ bc->P[N + 1];
 
-   *xl = Xl;
-   *xr = Xr;
+	*xl = Xl;
+	*xr = Xr;
 }
 
 void Blowfish_decipher(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 {
-   unsigned long  Xl;
-   unsigned long  Xr;
-   unsigned long  temp;
-   short          i;
+	unsigned long  Xl;
+	unsigned long  Xr;
+	unsigned long  temp;
+	short          i;
 
-   Xl = *xl;
-   Xr = *xr;
+	Xl = *xl;
+	Xr = *xr;
 
-   for (i = N + 1; i > 1; --i)
-   {
-      Xl = Xl ^ bc->P[i];
-      Xr = F(bc, Xl) ^ Xr;
+	for (i = N + 1; i > 1; --i) {
+		Xl = Xl ^ bc->P[i];
+		Xr = F(bc, Xl) ^ Xr;
 
-      /* Exchange Xl and Xr */
-      temp = Xl;
-      Xl = Xr;
-      Xr = temp;
-   }
+		/* Exchange Xl and Xr */
+		temp = Xl;
+		Xl = Xr;
+		Xr = temp;
+	}
 
-   /* Exchange Xl and Xr */
-   temp = Xl;
-   Xl = Xr;
-   Xr = temp;
+	/* Exchange Xl and Xr */
+	temp = Xl;
+	Xl = Xr;
+	Xr = temp;
 
-   Xr = Xr ^ bc->P[1];
-   Xl = Xl ^ bc->P[0];
+	Xr = Xr ^ bc->P[1];
+	Xl = Xl ^ bc->P[0];
 
-   *xl = Xl;
-   *xr = Xr;
+	*xl = Xl;
+	*xr = Xr;
 }
 
 short InitializeBlowfish(blf_ctx *bc, unsigned char key[], int keybytes)
@@ -119,12 +117,10 @@ short InitializeBlowfish(blf_ctx *bc, unsigned char key[], int keybytes)
 	 unsigned long  datar;
 
 	/* initialise p & s-boxes without file read */
-	for (i = 0; i < N+2; i++)
-	{
+	for (i = 0; i < N+2; i++) {
 		bc->P[i] = bfp[i];
 	}
-	for (i = 0; i < 256; i++)
-	{
+	for (i = 0; i < 256; i++) {
 		bc->S[0][i] = ks0[i];
 		bc->S[1][i] = ks1[i];
 		bc->S[2][i] = ks2[i];
@@ -132,16 +128,13 @@ short InitializeBlowfish(blf_ctx *bc, unsigned char key[], int keybytes)
 	}
 
 	j = 0;
-	for (i = 0; i < N + 2; ++i)
-	{
+	for (i = 0; i < N + 2; ++i) {
 		data = 0x00000000;
-		for (k = 0; k < 4; ++k)
-		{
+		for (k = 0; k < 4; ++k) {
 			data = (data << 8) | key[j];
 			j = j + 1;
-			if (j >= keybytes)
-			{
-	  			j = 0;
+			if (j >= keybytes) {
+				j = 0;
 			}
 		}
 		bc->P[i] = bc->P[i] ^ data;
@@ -150,19 +143,15 @@ short InitializeBlowfish(blf_ctx *bc, unsigned char key[], int keybytes)
 	datal = 0x00000000;
 	datar = 0x00000000;
 
-	for (i = 0; i < N + 2; i += 2)
-	{
+	for (i = 0; i < N + 2; i += 2) {
 		Blowfish_encipher(bc, &datal, &datar);
 
 		bc->P[i] = datal;
 		bc->P[i + 1] = datar;
 	}
 
-	for (i = 0; i < 4; ++i)
-	{
-		for (j = 0; j < 256; j += 2)
-		{
-
+	for (i = 0; i < 4; ++i) {
+		for (j = 0; j < 256; j += 2) {
 			Blowfish_encipher(bc, &datal, &datar);
 
 			bc->S[i][j] = datal;
@@ -183,8 +172,7 @@ void blf_enc(blf_ctx *c, unsigned long *data, int blocks)
 	int i;
 
 	d = data;
-	for (i = 0; i < blocks; i++)
-	{
+	for (i = 0; i < blocks; i++) {
 		Blowfish_encipher(c, d, d+1);
 		d += 2;
 	}
@@ -196,8 +184,7 @@ void blf_dec(blf_ctx *c, unsigned long *data, int blocks)
 	int i;
 
 	d = data;
-	for (i = 0; i < blocks; i++)
-	{
+	for (i = 0; i < blocks; i++) {
 		Blowfish_decipher(c, d, d+1);
 		d += 2;
 	}
@@ -205,7 +192,8 @@ void blf_dec(blf_ctx *c, unsigned long *data, int blocks)
 
 // modified functions for version 7
 
-unsigned long bswap(unsigned long num) {
+unsigned long bswap(unsigned long num)
+{
     return(((num & 0xff000000) >> 24) |
            ((num & 0x00ff0000) >>  8) |
            ((num & 0x0000ff00) <<  8) |
@@ -214,79 +202,77 @@ unsigned long bswap(unsigned long num) {
 
 void Blowfish_encipher7(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 {
-   unsigned long  Xl;
-   unsigned long  Xr;
-   unsigned long  temp;
-   short          i;
+	unsigned long  Xl;
+	unsigned long  Xr;
+	unsigned long  temp;
+	short          i;
 
-   Xl = *xl;
-   Xr = *xr;
+	Xl = *xl;
+	Xr = *xr;
 
-   for (i = 0; i < N; ++i)
-   {
-      switch(i) {   // version7
-        case 1:  temp = bc->P[3];   break;
-        case 2:  temp = bc->P[4];   break;
-        case 3:  temp = bc->P[1];   break;
-        case 4:  temp = bc->P[2];   break;
-        default: temp = bc->P[i];   break;
-      }
-      Xl = Xl ^ temp;
-      Xr = F(bc, Xl) ^ Xr;
+	for (i = 0; i < N; ++i) {
+		switch(i) {   // version7
+		case 1:  temp = bc->P[3]; break;
+		case 2:  temp = bc->P[4]; break;
+		case 3:  temp = bc->P[1]; break;
+		case 4:  temp = bc->P[2]; break;
+		default: temp = bc->P[i]; break;
+		}
+		Xl = Xl ^ temp;
+		Xr = F(bc, Xl) ^ Xr;
 
-      temp = Xl;
-      Xl = Xr;
-      Xr = temp;
-   }
+		temp = Xl;
+		Xl = Xr;
+		Xr = temp;
+	}
 
-   temp = Xl;
-   Xl = Xr;
-   Xr = temp;
+	temp = Xl;
+	Xl = Xr;
+	Xr = temp;
 
-   Xr = Xr ^ bc->P[N];
-   Xl = Xl ^ bc->P[N + 1];
+	Xr = Xr ^ bc->P[N];
+	Xl = Xl ^ bc->P[N + 1];
 
-   *xl = Xl;
-   *xr = Xr;
+	*xl = Xl;
+	*xr = Xr;
 }
 
 void Blowfish_decipher7(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 {
-   unsigned long  Xl;
-   unsigned long  Xr;
-   unsigned long  temp;
-   short          i;
+	unsigned long  Xl;
+	unsigned long  Xr;
+	unsigned long  temp;
+	short          i;
 
-   Xl = *xl;
-   Xr = *xr;
+	Xl = *xl;
+	Xr = *xr;
 
-   for (i = N + 1; i > 1; --i)
-   {
-      switch(i) {   // version7
-        case 4:  temp = bc->P[2];   break;
-        case 3:  temp = bc->P[1];   break;
-        case 2:  temp = bc->P[4];   break;
-        default: temp = bc->P[i];   break;
-      }
-      Xl = Xl ^ temp;
-      Xr = F(bc, Xl) ^ Xr;
+	for (i = N + 1; i > 1; --i) {
+		switch(i) {   // version7
+			case 4:  temp = bc->P[2];   break;
+			case 3:  temp = bc->P[1];   break;
+			case 2:  temp = bc->P[4];   break;
+			default: temp = bc->P[i];   break;
+		}
+		Xl = Xl ^ temp;
+		Xr = F(bc, Xl) ^ Xr;
 
-      /* Exchange Xl and Xr */
-      temp = Xl;
-      Xl = Xr;
-      Xr = temp;
-   }
+		/* Exchange Xl and Xr */
+		temp = Xl;
+		Xl = Xr;
+		Xr = temp;
+	}
 
-   /* Exchange Xl and Xr */
-   temp = Xl;
-   Xl = Xr;
-   Xr = temp;
+	/* Exchange Xl and Xr */
+	temp = Xl;
+	Xl = Xr;
+	Xr = temp;
 
-   Xr = Xr ^ bc->P[3];  // version7
-   Xl = Xl ^ bc->P[0];
+	Xr = Xr ^ bc->P[3];  // version7
+	Xl = Xl ^ bc->P[0];
 
-   *xl = Xl;
-   *xr = Xr;
+	*xl = Xl;
+	*xr = Xr;
 }
 
 short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
@@ -299,12 +285,10 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
 	 unsigned long  datar;
 
 	/* initialise p & s-boxes without file read */
-	for (i = 0; i < N+2; i++)
-	{
+	for (i = 0; i < N+2; i++) {
 		bc->P[i] = bfp[i];
 	}
-	for (i = 0; i < 256; i++)
-	{
+	for (i = 0; i < 256; i++) {
 		bc->S[0][i] = ks0[i];
 		bc->S[1][i] = ks1[i];
 		bc->S[2][i] = ks2[i];
@@ -313,15 +297,12 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
     bc->S[0][118] = bswap(bc->S[0][118]);   // version7
 
 	j = 0;
-	for (i = 0; i < N + 2; ++i)
-	{
+	for (i = 0; i < N + 2; ++i) {
 		data = 0x00000000;
-		for (k = 0; k < 4; ++k)
-		{
+		for (k = 0; k < 4; ++k) {
 			data = (data << 8) | key[j];
 			j = j + 1;
-			if (j >= keybytes)
-			{
+			if (j >= keybytes) {
 	  			j = 0;
 			}
 		}
@@ -331,18 +312,15 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
 	datal = 0x00000000;
 	datar = 0x00000000;
 
-	for (i = 0; i < N + 2; i += 2)
-	{
+	for (i = 0; i < N + 2; i += 2) {
 		Blowfish_encipher(bc, &datal, &datar);
 
 		bc->P[i] = datal;
 		bc->P[i + 1] = datar;
 	}
 
-	for (i = 0; i < 4; ++i)
-	{
-		for (j = 0; j < 256; j += 2)
-		{
+	for (i = 0; i < 4; ++i) {
+		for (j = 0; j < 256; j += 2) {
 			Blowfish_encipher(bc, &datal, &datar);
 
 			bc->S[i][j] = datal;
@@ -364,8 +342,7 @@ void blf_enc7(blf_ctx *c, unsigned long *data, int blocks)
 	int i;
 
 	d = data;
-	for (i = 0; i < blocks; i++)
-	{
+	for (i = 0; i < blocks; i++) {
 		Blowfish_encipher7(c, d, d+1);
 		d += 2;
 	}
@@ -377,10 +354,8 @@ void blf_dec7(blf_ctx *c, unsigned long *data, int blocks)
 	int i;
 
 	d = data;
-	for (i = 0; i < blocks; i++)
-	{
+	for (i = 0; i < blocks; i++) {
 		Blowfish_decipher7(c, d, d+1);
 		d += 2;
 	}
 }
-
