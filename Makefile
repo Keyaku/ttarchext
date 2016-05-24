@@ -1,7 +1,7 @@
 DSTDIR = bin
 SRCDIR = src
 
-CFLAGS = -std=c99 -c -pedantic -O3 -flto -Wall -DUSE_DYNAMIC_LOADING $(INCLUDE)
+CFLAGS = -std=c99 -c -pedantic -O3 -flto -Wall -Wno-pointer-sign
 LDFLAGS = -lz
 
 ifeq ($(shell uname), Darwin)
