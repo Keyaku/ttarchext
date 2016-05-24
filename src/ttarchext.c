@@ -202,9 +202,85 @@ u64 myfw(FILE *fd, u8 *data, u64 size);
 u64 get_num(u8 *str);
 void std_err(void);
 
+void print_usage(char *progname)
+{
+	printf("\n"
+		"Usage: %s [options] <gamenum> <file.TTARCH> <output_folder>\n"
+		"\n"
+		"Options:\n"
+		"-l      list the files without extracting them, you can use . as output folder\n"
+		"-f W    filter the files to extract using the W wildcard, example -f \"*.mp3\"\n"
+		"-o      if the output files already exist this option will overwrite them\n"
+		"        automatically without asking the user's confirmation\n"
+		"-m      automatically extract the data inside the meta files, for example the\n"
+		"        DDS from FONT and D3DTX files and OGG from AUD and so on... USEFUL!\n"
+		"-b      rebuild option, instead of extracting it performs the building of the\n"
+		"        ttarch archive, example: ttarchext -b 24 output.ttarch input_folder\n"
+		"        do NOT use -m in the extraction if you want to rebuild the archive!\n"
+		"-k K    specify a custom key in hexadecimal (like 0011223344), use gamenum 0\n"
+		"-d OFF  perform only the blowfish decryption of the input file from offset OFF\n"
+		"-D O S  as above but the decryption is performed only on the piece of file\n"
+		"        from offset O for a total of S bytes, the rest will remain as is\n"
+		"-e OFF  perform the blowfish encryption of the input file (debug)\n"
+		"-E O S  as above but the encryption is performed only on the piece of file\n"
+		"        from offset O for a total of S bytes, the rest will remain as is\n"
+		"-V VER  force a specific version number, needed ONLY with -d and -e when\n"
+		"        handling archives of version 7 (like Tales of Monkey Island)\n"
+		"-O      force the old mode format (needed sometimes with old archives, debug)\n"
+		"-x      for versions >= 7 only in rebuild mode, if the game crashes when uses\n"
+		"        the rebuilt archive try to rebuild it adding this -x option\n"
+		"-T F    dump the decrypted name table in the file F (debug)\n"
+		"\n", progname
+	);
+}
 
+void print_examples(void)
+{
+	printf("\n"
+		"Examples:\n"
+		"  ttarchext.exe -m 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
+		"  ttarchext.exe -l 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
+		"  ttarchext.exe -b -V 7 24 c:\\1_output.ttarch c:\\1_input_folder\n"
+		"\n"
+		"The tool can work also on single encrypted files like the prop files usually\n"
+		"located in the main folder or the various aud files, examples:\n"
+		"  ttarchext.exe -V 7 24 c:\\ttg_splash_a_telltale.d3dtx \"c:\\new folder\"\n"
+		"  ttarchext.exe -V 7 -e 0 24 \"c:\\new folder\\ttg_splash_a_telltale.d3dtx\" c:\\\n"
+		"\n"
+		"Notes: from version 0.2 the tool performs the automatic decryption of lenc\n"
+		"       files to Lua and vice versa during the rebuilding\n"
+		"\n"
+		"Additional notes copy&pasted from the website of the tool:\n"
+		"\n"
+		"remember to use the -m option to dump the FONT and D3DTX files as DDS and the AUD as OGG but do NOT use this option if you plan to rebuild the ttarch archive!.\n"
+		"the tool has also various options for listing the files without extracting them, overwriting the existent files, wildcards and other options (mainly debug stuff for myself).\n"
+		"examples for \"Tales of Monkey Island: Launch of the Screaming Narwhal\":\n"
+		"\n"
+		"  extraction: ttarchext.exe 24 \"C:\\...pc_launcheronly.ttarch\" c:\\output_folder\n"
+		"  rebuilding: ttarchext.exe -b -V 7 24 \"C:\\...\\0.ttarch\" c:\\input_folder\n"
+		"  decrypt lenc: ttarchext 55 c:\\input_file.lenc c:\\output_folder\n"
+		"  encrypt lua: ttarchext -V 7 -e 0 55 c:\\input_file.lua c:\\output_folder\n"
+		"\n"
+		"remember that if you have modified only a couple of files (for example english.langdb and one or images) you don't need to rebuild the whole archive but it's enough to build a new one called 0.ttarch containing ONLY the files you modifed, it will be read by the game like a patch and will occupy only a minimal amount of space.\n"
+		"note that the old versions of the TellTale games (so not those currently available on that website) are not supported because use different encryptions and sometimes format, and being old versions are NOT supported by me in any case.\n"
+		"if the game uses version 7 or 8 and crashes when uses the rebuilt package try to rebuild the archive specifying the -x option.\n"
+		"\n"
+		"Usually you don't need to create 0.ttarch if you modify only the landb file, you can leave that file in the pack folder.\n"
+		"\n");
+}
 
-int main(int argc, char *argv[]) {
+void list_games(void)
+{
+	int i;
+	
+	printf("Games (gamenum):\n");
+	for (i = 0; gamekeys[i].name; i++) {
+		printf(" %-3d %s\n", i, gamekeys[i].name);
+	}
+}
+
+int main(int argc, char *argv[])
+{
     FILE    *fd;
     int     i,
             rebuild         = 0,
@@ -222,74 +298,15 @@ int main(int argc, char *argv[]) {
     fputs("\n"
         "Telltale TTARCH files extractor/rebuilder " VER "\n"
         "by Luigi Auriemma\n"
+		"(modifications by Keyaku)"
         "e-mail: aluigi@autistici.org\n"
         "web:    aluigi.org\n"
         "\n", stdout);
 
     if (argc < 4) {
-        printf("\n"
-            "Usage: %s [options] <gamenum> <file.TTARCH> <output_folder>\n"
-            "\n"
-            "Options:\n"
-            "-l      list the files without extracting them, you can use . as output folder\n"
-            "-f W    filter the files to extract using the W wildcard, example -f \"*.mp3\"\n"
-            "-o      if the output files already exist this option will overwrite them\n"
-            "        automatically without asking the user's confirmation\n"
-            "-m      automatically extract the data inside the meta files, for example the\n"
-            "        DDS from FONT and D3DTX files and OGG from AUD and so on... USEFUL!\n"
-            "-b      rebuild option, instead of extracting it performs the building of the\n"
-            "        ttarch archive, example: ttarchext -b 24 output.ttarch input_folder\n"
-            "        do NOT use -m in the extraction if you want to rebuild the archive!\n"
-            "-k K    specify a custom key in hexadecimal (like 0011223344), use gamenum 0\n"
-            "-d OFF  perform only the blowfish decryption of the input file from offset OFF\n"
-            "-D O S  as above but the decryption is performed only on the piece of file\n"
-            "        from offset O for a total of S bytes, the rest will remain as is\n"
-            "-e OFF  perform the blowfish encryption of the input file (debug)\n"
-            "-E O S  as above but the encryption is performed only on the piece of file\n"
-            "        from offset O for a total of S bytes, the rest will remain as is\n"
-            "-V VER  force a specific version number, needed ONLY with -d and -e when\n"
-            "        handling archives of version 7 (like Tales of Monkey Island)\n"
-            "-O      force the old mode format (needed sometimes with old archives, debug)\n"
-            "-x      for versions >= 7 only in rebuild mode, if the game crashes when uses\n"
-            "        the rebuilt archive try to rebuild it adding this -x option\n"
-            "-T F    dump the decrypted name table in the file F (debug)\n"
-            "\n", argv[0]);
-
-        printf("Games (gamenum):\n");
-        for (i = 0; gamekeys[i].name; i++) {
-            printf(" %-3d %s\n", i, gamekeys[i].name);
-        }
-        printf("\n"
-            "Examples:\n"
-            "  ttarchext.exe -m 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
-            "  ttarchext.exe -l 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
-            "  ttarchext.exe -b -V 7 24 c:\\1_output.ttarch c:\\1_input_folder\n"
-            "\n"
-            "The tool can work also on single encrypted files like the prop files usually\n"
-            "located in the main folder or the various aud files, examples:\n"
-            "  ttarchext.exe -V 7 24 c:\\ttg_splash_a_telltale.d3dtx \"c:\\new folder\"\n"
-            "  ttarchext.exe -V 7 -e 0 24 \"c:\\new folder\\ttg_splash_a_telltale.d3dtx\" c:\\\n"
-            "\n"
-            "Notes: from version 0.2 the tool performs the automatic decryption of lenc\n"
-            "       files to Lua and vice versa during the rebuilding\n"
-            "\n"
-            "Additional notes copy&pasted from the website of the tool:\n"
-            "\n"
-            "remember to use the -m option to dump the FONT and D3DTX files as DDS and the AUD as OGG but do NOT use this option if you plan to rebuild the ttarch archive!.\n"
-            "the tool has also various options for listing the files without extracting them, overwriting the existent files, wildcards and other options (mainly debug stuff for myself).\n"
-            "examples for \"Tales of Monkey Island: Launch of the Screaming Narwhal\":\n"
-            "\n"
-            "  extraction: ttarchext.exe 24 \"C:\\...pc_launcheronly.ttarch\" c:\\output_folder\n"
-            "  rebuilding: ttarchext.exe -b -V 7 24 \"C:\\...\\0.ttarch\" c:\\input_folder\n"
-            "  decrypt lenc: ttarchext 55 c:\\input_file.lenc c:\\output_folder\n"
-            "  encrypt lua: ttarchext -V 7 -e 0 55 c:\\input_file.lua c:\\output_folder\n"
-            "\n"
-            "remember that if you have modified only a couple of files (for example english.langdb and one or images) you don't need to rebuild the whole archive but it's enough to build a new one called 0.ttarch containing ONLY the files you modifed, it will be read by the game like a patch and will occupy only a minimal amount of space.\n"
-            "note that the old versions of the TellTale games (so not those currently available on that website) are not supported because use different encryptions and sometimes format, and being old versions are NOT supported by me in any case.\n"
-            "if the game uses version 7 or 8 and crashes when uses the rebuilt package try to rebuild the archive specifying the -x option.\n"
-            "\n"
-            "Usually you don't need to create 0.ttarch if you modify only the landb file, you can leave that file in the pack folder.\n"
-            "\n");
+        print_usage(argv[0]);
+        list_games();
+		print_examples();
         exit(1);
     }
 
@@ -406,7 +423,8 @@ int main(int argc, char *argv[]) {
 
 
 
-u64 get_file_size(FILE *fd) {
+u64 get_file_size(FILE *fd)
+{
     u64     curr,
             size;
 
@@ -418,9 +436,9 @@ u64 get_file_size(FILE *fd) {
 }
 
 
-
 // hash tables used for searching names in a faster way
-u64 ttarch2_hash(u64 crc, u8 *str) {
+u64 ttarch2_hash(u64 crc, u8 *str)
+{
     static const u64    ttarch2_hash_crctable[256] = {
         0x0000000000000000, 0x42f0e1eba9ea3693, 0x85e1c3d753d46d26, 0xc711223cfa3e5bb5,
         0x493366450e42ecdf, 0x0bc387aea7a8da4c, 0xccd2a5925d9681f9, 0x8e224479f47cb76a,
@@ -501,8 +519,8 @@ u64 ttarch2_hash(u64 crc, u8 *str) {
 }
 
 
-
-int ttarch_import_lua(u8 *ext, u8 *buff, u64 *size, int encrypt) {
+int ttarch_import_lua(u8 *ext, u8 *buff, u64 *size, int encrypt)
+{
     if (ext && (!stricmp(ext, ".lua") || !stricmp(ext, ".lenc"))) {
         if (IS_LUA(buff) || (encrypt && (gamenum >= 58))) {
             if (gamenum >= 58) {
@@ -524,8 +542,8 @@ int ttarch_import_lua(u8 *ext, u8 *buff, u64 *size, int encrypt) {
 }
 
 
-
-u64 ttarch_import(FILE *fdo, u8 *fname) {
+u64 ttarch_import(FILE *fdo, u8 *fname)
+{
     static u64  buffsz  = 0;
     static u8   *buff   = NULL;
     struct stat xstat;
@@ -554,8 +572,8 @@ u64 ttarch_import(FILE *fdo, u8 *fname) {
 }
 
 
-
-u64 pad_it(u64 num, u64 pad) {
+u64 pad_it(u64 num, u64 pad)
+{
     u64     t;
 
     t = num % pad;
@@ -564,8 +582,8 @@ u64 pad_it(u64 num, u64 pad) {
 }
 
 
-
-u8 *import_filename(u8 *fname) {
+u8 *import_filename(u8 *fname)
+{
     static u64  buffsz  = 0;
     static u8   *buff   = NULL;
 
@@ -583,8 +601,8 @@ u8 *import_filename(u8 *fname) {
 }
 
 
-
-void build_sort_ttarch2_crc_names(files_t *files, u32 tot) {
+void build_sort_ttarch2_crc_names(files_t *files, u32 tot)
+{
     files_t tmp;
     u32     i,
             j;
@@ -605,8 +623,8 @@ void build_sort_ttarch2_crc_names(files_t *files, u32 tot) {
 }
 
 
-
-u32 rebuild_it(u8 *output_name, FILE *fdo) {
+u32 rebuild_it(u8 *output_name, FILE *fdo)
+{
     u64     off         = 0,
             data_size   = 0,
             size_check;
@@ -698,7 +716,6 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
         myfw(fdo, names_table, names_size);
 
     } else {
-
         info_size += 4;     // folders
         for (i = 0; folders[i]; i++) {
             info_size += 4 + strlen(folders[i]);
@@ -780,12 +797,12 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
         exit(1);
     }
 
-    return(tot);
+    return (tot);
 }
 
 
-
-files_t *add_files(u8 *fname, u64 fsize, int *ret_files) {
+files_t *add_files(u8 *fname, u64 fsize, int *ret_files)
+{
     static int      filesi  = 0,
                     filesn  = 0;
     static files_t  *files  = NULL;
@@ -806,7 +823,6 @@ files_t *add_files(u8 *fname, u64 fsize, int *ret_files) {
     filesi++;
     return(NULL);
 }
-
 
 
 int recursive_dir(u8 *filedir) {
@@ -900,7 +916,6 @@ quit:
 }
 
 
-
 u64 crypt_it(FILE *fd, u8 *fname, u64 offset, int wanted_size /*signed!*/, int encrypt) {
     static u64  buffsz  = 0;
     static u8   *buff   = NULL;
@@ -941,7 +956,6 @@ u64 crypt_it(FILE *fd, u8 *fname, u64 offset, int wanted_size /*signed!*/, int e
 }
 
 
-
 u8 *string2key(u8 *data) {
     int     i,
             n;
@@ -959,7 +973,6 @@ u8 *string2key(u8 *data) {
 }
 
 
-
 u64 ttarch_getxx(FILE *fd, u8 **data, int bytes) {
     u64     ret;
 
@@ -971,7 +984,6 @@ u64 ttarch_getxx(FILE *fd, u8 **data, int bytes) {
     }
     return(ret);
 }
-
 
 
 u8 *ttarch_fgetss(FILE *fd) {
@@ -990,7 +1002,6 @@ u8 *ttarch_fgetss(FILE *fd) {
 }
 
 
-
 u8 *ttarch_getname(FILE *fd, u8 **data) {
     static u64  buffsz  = 0;
     static u8   *buff   = NULL;
@@ -1007,7 +1018,6 @@ u8 *ttarch_getname(FILE *fd, u8 **data) {
     buff[namesz] = 0;
     return(buff);
 }
-
 
 
 int ttarch_extract(FILE *fd, u8 *input_fname) {
@@ -1357,11 +1367,9 @@ int ttarch_meta_crypt(u8 *data, u64 datalen, int encrypt) {
 }
 
 
-
 u64 ttarch_ftell(FILE *stream) {
     return ttarch_offset;
 }
-
 
 
 int ttarch_fseek(FILE *stream, u64 offset, int origin) {
@@ -1384,14 +1392,12 @@ int ttarch_fseek(FILE *stream, u64 offset, int origin) {
 }
 
 
-
 u64 ttarch_fgetxx(int bytes, FILE *stream) {
     u8      tmp[bytes];
 
     ttarch_fread(tmp, bytes, stream);
     return getxx(tmp, bytes);
 }
-
 
 
 u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
@@ -1453,7 +1459,6 @@ u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
 }
 
 
-
 void xor(u8 *data, u64 datalen, int xornum) {
     u64     i;
 
@@ -1461,7 +1466,6 @@ void xor(u8 *data, u64 datalen, int xornum) {
         data[i] ^= xornum;
     }
 }
-
 
 
 void blowfish(u8 *data, u64 datalen, int encrypt) {
@@ -1498,7 +1502,6 @@ void blowfish(u8 *data, u64 datalen, int encrypt) {
         }
     }
 }
-
 
 
 u8 *scan_search(u8 *buff, u64 *buffsz, u8 *find, int findsz) {
@@ -1538,7 +1541,6 @@ u8 *scan_search(u8 *buff, u64 *buffsz, u8 *find, int findsz) {
     }
     return(NULL);
 }
-
 
 
 u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experimental and horrible, ignores the classes
@@ -1620,7 +1622,6 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
 }
 
 
-
 int mymemmove(u8 *dst, u8 *src, int size) {
     int     i;
 
@@ -1637,7 +1638,6 @@ int mymemmove(u8 *dst, u8 *src, int size) {
     }
     return(i);
 }
-
 
 
 int ttarch_dumpa(u8 *fname, u8 *data, u64 size, int already_decrypted) {
@@ -1694,7 +1694,6 @@ int ttarch_dumpa(u8 *fname, u8 *data, u64 size, int already_decrypted) {
 }
 
 
-
 u64 unzip(u8 *in, u64 insz, u8 *out, u64 outsz) {
     static z_stream *z_zlib     = NULL;
     static z_stream *z_deflate  = NULL;
@@ -1747,7 +1746,6 @@ redo:
 }
 
 
-
 int check_wildcard(u8 *fname, u8 *wildcard) {
     u8      *f,
             *w,
@@ -1783,7 +1781,6 @@ int check_wildcard(u8 *fname, u8 *wildcard) {
 }
 
 
-
 u8 *create_dir(u8 *fname) {
     u8      *p,
             *l;
@@ -1813,7 +1810,6 @@ u8 *create_dir(u8 *fname) {
 }
 
 
-
 int check_overwrite(u8 *fname) {
     FILE    *fd;
     u8      ans[16];
@@ -1834,7 +1830,6 @@ int check_overwrite(u8 *fname) {
 }
 
 
-
 void myalloc(u8 **data, u64 wantsize, u64 *currsize) {
     u64     tmp = 0;
 
@@ -1850,7 +1845,6 @@ void myalloc(u8 **data, u64 wantsize, u64 *currsize) {
 }
 
 
-
 u64 getxx(u8 *tmp, int bytes) {
     u64     num;
     int     i;
@@ -1863,7 +1857,6 @@ u64 getxx(u8 *tmp, int bytes) {
 }
 
 
-
 u64 fgetxx(FILE *fd, int bytes) {
     u64     ret;
     u8      tmp[bytes];
@@ -1873,7 +1866,6 @@ u64 fgetxx(FILE *fd, int bytes) {
     if (verbose) printf("  %08x: %08x\n", (u32)ftell(fd) - bytes, (u32)ret);
     return(ret);
 }
-
 
 
 u64 myfr(FILE *fd, u8 *data, u64 size) {
@@ -1895,7 +1887,6 @@ u64 myfr(FILE *fd, u8 *data, u64 size) {
 }
 
 
-
 int putxx(u8 *data, u64 num, int bytes) {
     int     i;
 
@@ -1904,7 +1895,6 @@ int putxx(u8 *data, u64 num, int bytes) {
     }
     return(bytes);
 }
-
 
 
 int fputxx(FILE *fd, u64 num, int bytes) {
@@ -1916,7 +1906,6 @@ int fputxx(FILE *fd, u64 num, int bytes) {
 }
 
 
-
 void dumpa(u8 *fname, u8 *data, u64 size, u8 *more, int more_size) {
     FILE    *fdo;
 
@@ -1926,7 +1915,6 @@ void dumpa(u8 *fname, u8 *data, u64 size, u8 *more, int more_size) {
     myfw(fdo, data, size);
     fclose(fdo);
 }
-
 
 
 u64 myfw(FILE *fd, u8 *data, u64 size) {
@@ -1941,7 +1929,6 @@ u64 myfw(FILE *fd, u8 *data, u64 size) {
 }
 
 
-
 u64 get_num(u8 *str) {
     //u64     offset;
     int     off32;  // currently this is not important
@@ -1953,7 +1940,6 @@ u64 get_num(u8 *str) {
     }
     return(off32);
 }
-
 
 
 void std_err(void) {
