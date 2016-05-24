@@ -271,10 +271,8 @@ void print_examples(void)
 
 void list_games(void)
 {
-	int i;
-	
 	printf("Games (gamenum):\n");
-	for (i = 0; gamekeys[i].name; i++) {
+	for (int i = 0; gamekeys[i].name; i++) {
 		printf(" %-3d %s\n", i, gamekeys[i].name);
 	}
 }
@@ -1449,7 +1447,7 @@ u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
         }
         if (ptr) {
             memcpy(ptr, out, len);
-            ptr += len;
+            ptr = (char*)ptr + len; // abiding by the standard
         }
         if (currsz >= size) break;
     }
@@ -1584,14 +1582,13 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
         else    { ret = p; size += 4; } // restore
 
     } else if (!stricmp(ext, ".lenc") || !stricmp(ext, ".lua")) {
-
         if (IS_LUA2(data)) {
-            if ((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
+            if (version < 7) { version = 7; } // do NOT enable this: else version = 1;
             blowfish(data + 4, size - 4, 0);
             memcpy(data, "\x1bLua", 4);
 
         } else if (IS_LUA3(data)) {
-            if ((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
+            if (version < 7) { version = 7; } // do NOT enable this: else version = 1;
             blowfish(data + 4, size - 4, 0);
             size -= 4;  // no header
             ret = data + 4;
@@ -1600,7 +1597,7 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
             memcpy(tmp, data, 8);
             blowfish(tmp, 8, 0);
             if (!IS_LUA(tmp)) {
-                if ((version >= 0) && (version < 7)) version = 7; else version = 1;
+				version = version < 7 ? 7 : 1;
                 memcpy(tmp, data, 8);
                 blowfish(tmp, 8, 0);
                 if (!IS_LUA(tmp)) {
@@ -1613,7 +1610,7 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
         }
         strcpy(ext, ".lua");
     }
-    if (ret && (size >= 0)) {
+    if (ret) {
         *datalen = size;
     } else {
         ret = data;
