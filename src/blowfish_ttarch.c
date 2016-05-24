@@ -211,7 +211,7 @@ void Blowfish_encipher7(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 	Xr = *xr;
 
 	for (i = 0; i < N; ++i) {
-		switch(i) {   // version7
+		switch (i) {   // version7
 		case 1:  temp = bc->P[3]; break;
 		case 2:  temp = bc->P[4]; break;
 		case 3:  temp = bc->P[1]; break;
@@ -248,7 +248,7 @@ void Blowfish_decipher7(blf_ctx *bc, unsigned long *xl, unsigned long *xr)
 	Xr = *xr;
 
 	for (i = N + 1; i > 1; --i) {
-		switch(i) {   // version7
+		switch (i) {   // version7
 			case 4:  temp = bc->P[2];   break;
 			case 3:  temp = bc->P[1];   break;
 			case 2:  temp = bc->P[4];   break;

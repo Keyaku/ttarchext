@@ -208,6 +208,7 @@ void print_usage(char *progname)
 		"Usage: %s [options] <gamenum> <file.TTARCH> <output_folder>\n"
 		"\n"
 		"Options:\n"
+		"-h      shows this message along with some examples\n"
 		"-l      list the files without extracting them, you can use . as output folder\n"
 		"-f W    filter the files to extract using the W wildcard, example -f \"*.mp3\"\n"
 		"-o      if the output files already exist this option will overwrite them\n"
@@ -269,7 +270,7 @@ void print_examples(void)
 		"\n");
 }
 
-void list_games(void)
+void print_compat_games(void)
 {
 	printf("Games (gamenum):\n");
 	for (int i = 0; gamekeys[i].name; i++) {
@@ -303,8 +304,10 @@ int main(int argc, char *argv[])
 
     if (argc < 4) {
         print_usage(argv[0]);
-        list_games();
-		print_examples();
+		if (argc >= 2 && strcmp(argv[1], "-h") == 0) {
+	        print_compat_games();
+			print_examples();
+		}
         exit(1);
     }
 
@@ -314,7 +317,7 @@ int main(int argc, char *argv[])
             printf("\nError: wrong argument (%s)\n", argv[i]);
             exit(1);
         }
-        switch(argv[i][1]) {
+        switch (argv[i][1]) {
             case 'l': list_only         = 1;                    break;
             case 'f': filter_files      = argv[++i];            break;
             case 'o': force_overwrite   = 1;                    break;
@@ -1100,7 +1103,7 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
 
     version = fgetxx(fd, 4);
 
-    switch(version) {
+    switch (version) {
         case 0x54544345:        // ECTT
             ttarch_chunks_b = 1;
             // NO BREAK! it must continue as ZCTT
@@ -1333,7 +1336,7 @@ int ttarch_meta_crypt(u8 *data, u64 datalen, int encrypt) {
     l = data + datalen;
     file_type = ttarch_getxx(NULL, &p, 4);
 
-    switch(file_type) {
+    switch (file_type) {
         case 0x4D424553: SET_BLOCKS(0x40,  0x40, 0x64)  break;  // SEBM
         case 0x4D42494E:                                break;  // NIBM
         case 0xFB4A1764: SET_BLOCKS(0x80,  0x20, 0x50)  break;
