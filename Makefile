@@ -1,4 +1,4 @@
-DSTDIR = bin
+DSTDIR = bld
 SRCDIR = src
 
 CFLAGS = -std=c99 -c -pedantic -O3 -flto -Wall -Wno-pointer-sign
