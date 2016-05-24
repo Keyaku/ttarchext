@@ -54,7 +54,7 @@ typedef uint64_t    u64;
 #define IS_LUA(X)       (!memcmp(X, "Lua", 3) || !memcmp(X, "\x1bLu", 3))
 #define IS_LUA2(X)      (!memcmp(X, "\x1bLEn", 4))
 #define IS_LUA3(X)      (!memcmp(X, "\x1bLEo", 4))
-#define FREE(X)         if(X) { free(X); X = NULL; }
+#define FREE(X)         if (X) { free(X); X = NULL; }
 #define MEMMOVE_SIZE    16      // amount of additional bytes to allocate for performing memmove operations without allocating new buffer
 
 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
         "web:    aluigi.org\n"
         "\n", stdout);
 
-    if(argc < 4) {
+    if (argc < 4) {
         printf("\n"
             "Usage: %s [options] <gamenum> <file.TTARCH> <output_folder>\n"
             "\n"
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
             "\n", argv[0]);
 
         printf("Games (gamenum):\n");
-        for(i = 0; gamekeys[i].name; i++) {
+        for (i = 0; gamekeys[i].name; i++) {
             printf(" %-3d %s\n", i, gamekeys[i].name);
         }
         printf("\n"
@@ -294,8 +294,8 @@ int main(int argc, char *argv[]) {
     }
 
     argc -= 3;
-    for(i = 1; i < argc; i++) {
-        if(((argv[i][0] != '-') && (argv[i][0] != '/')) || (strlen(argv[i]) != 2)) {
+    for (i = 1; i < argc; i++) {
+        if (((argv[i][0] != '-') && (argv[i][0] != '/')) || (strlen(argv[i]) != 2)) {
             printf("\nError: wrong argument (%s)\n", argv[i]);
             exit(1);
         }
@@ -329,8 +329,8 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    for(i = 0; i < 3; i++) {    // check, it's easy to forget some parameters
-        if((argv[argc + i][0] == '-') && (strlen(argv[argc + i]) == 2)) {
+    for (i = 0; i < 3; i++) {    // check, it's easy to forget some parameters
+        if ((argv[argc + i][0] == '-') && (strlen(argv[argc + i]) == 2)) {
             fprintf(stderr, "\n"
                 "Error: seems that you have missed one of the needed parameters.\n"
                 "       launch this tool without arguments for a quick help\n");
@@ -342,29 +342,29 @@ int main(int argc, char *argv[]) {
     fname   = argv[argc + 1];
     fdir    = argv[argc + 2];
 
-    if(rebuild) {
+    if (rebuild) {
         printf("- start building of %s\n", fname);
-        if(check_overwrite(fname) < 0) exit(1);
+        if (check_overwrite(fname) < 0) exit(1);
         fd = fopen(fname, "wb");
     } else {
         printf("- open file %s\n", fname);
         fd = fopen(fname, "rb");
     }
-    if(!fd) std_err();
+    if (!fd) std_err();
 
-    if(!list_only) {
+    if (!list_only) {
         printf("- set output folder %s\n", fdir);
-        if(chdir(fdir) < 0) std_err();
+        if (chdir(fdir) < 0) std_err();
     }
 
-    if(mykey) {
+    if (mykey) {
         printf("- set custom blowfish key\n");
         mykey = string2key(mykey);
     } else {
-        for(i = 0; i < gamenum; i++) {
-            if(!gamekeys[i].name) break;
+        for (i = 0; i < gamenum; i++) {
+            if (!gamekeys[i].name) break;
         }
-        if(!gamekeys[i].name) {
+        if (!gamekeys[i].name) {
             printf("\nError: the number of key you choosed is too big\n");
             exit(1);
         }
@@ -372,25 +372,25 @@ int main(int argc, char *argv[]) {
         mykey    = gamekeys[i].key;
         old_mode = gamekeys[i].old_mode;
     }
-    if(force_old_mode) old_mode = 1;
+    if (force_old_mode) old_mode = 1;
     //blowfish(NULL, 0, mykey, strlen(mykey), 0);   // no longer used
 
     p = strrchr(fname, '\\');
-    if(!p) p = strrchr(fname, '/');
-    if(p) fname = p + 1;
+    if (!p) p = strrchr(fname, '/');
+    if (p) fname = p + 1;
 
-    if(version == DEFAULT_VERSION) {
-        if(gamekeys[gamenum].extension == EXT_TTARCH2) version = 7;
+    if (version == DEFAULT_VERSION) {
+        if (gamekeys[gamenum].extension == EXT_TTARCH2) version = 7;
     }
 
-    if(rebuild) {
+    if (rebuild) {
         extracted_files = rebuild_it(fname, fd);
         printf("\n- %d files found\n", extracted_files);
     } else {
-        if(decrypt_only >= 0) {
+        if (decrypt_only >= 0) {
             i = crypt_it(fd, fname, decrypt_only, decrypt_onlysz, 0);
             printf("\n- decrypted %d bytes from offset 0x%08x\n", i, decrypt_only);
-        } else if(encrypt_only >= 0) {
+        } else if (encrypt_only >= 0) {
             i = crypt_it(fd, fname, encrypt_only, encrypt_onlysz, 1);
             printf("\n- encrypted %d bytes from offset 0x%08x\n", i, encrypt_only);
         } else {
@@ -422,79 +422,79 @@ u64 get_file_size(FILE *fd) {
 // hash tables used for searching names in a faster way
 u64 ttarch2_hash(u64 crc, u8 *str) {
     static const u64    ttarch2_hash_crctable[256] = {
-        0x0000000000000000, 0x42f0e1eba9ea3693, 0x85e1c3d753d46d26, 0xc711223cfa3e5bb5, 
-        0x493366450e42ecdf, 0x0bc387aea7a8da4c, 0xccd2a5925d9681f9, 0x8e224479f47cb76a, 
-        0x9266cc8a1c85d9be, 0xd0962d61b56fef2d, 0x17870f5d4f51b498, 0x5577eeb6e6bb820b, 
-        0xdb55aacf12c73561, 0x99a54b24bb2d03f2, 0x5eb4691841135847, 0x1c4488f3e8f96ed4, 
-        0x663d78ff90e185ef, 0x24cd9914390bb37c, 0xe3dcbb28c335e8c9, 0xa12c5ac36adfde5a, 
-        0x2f0e1eba9ea36930, 0x6dfeff5137495fa3, 0xaaefdd6dcd770416, 0xe81f3c86649d3285, 
-        0xf45bb4758c645c51, 0xb6ab559e258e6ac2, 0x71ba77a2dfb03177, 0x334a9649765a07e4, 
-        0xbd68d2308226b08e, 0xff9833db2bcc861d, 0x388911e7d1f2dda8, 0x7a79f00c7818eb3b, 
-        0xcc7af1ff21c30bde, 0x8e8a101488293d4d, 0x499b3228721766f8, 0x0b6bd3c3dbfd506b, 
-        0x854997ba2f81e701, 0xc7b97651866bd192, 0x00a8546d7c558a27, 0x4258b586d5bfbcb4, 
-        0x5e1c3d753d46d260, 0x1cecdc9e94ace4f3, 0xdbfdfea26e92bf46, 0x990d1f49c77889d5, 
-        0x172f5b3033043ebf, 0x55dfbadb9aee082c, 0x92ce98e760d05399, 0xd03e790cc93a650a, 
-        0xaa478900b1228e31, 0xe8b768eb18c8b8a2, 0x2fa64ad7e2f6e317, 0x6d56ab3c4b1cd584, 
-        0xe374ef45bf6062ee, 0xa1840eae168a547d, 0x66952c92ecb40fc8, 0x2465cd79455e395b, 
-        0x3821458aada7578f, 0x7ad1a461044d611c, 0xbdc0865dfe733aa9, 0xff3067b657990c3a, 
-        0x711223cfa3e5bb50, 0x33e2c2240a0f8dc3, 0xf4f3e018f031d676, 0xb60301f359dbe0e5, 
-        0xda050215ea6c212f, 0x98f5e3fe438617bc, 0x5fe4c1c2b9b84c09, 0x1d14202910527a9a, 
-        0x93366450e42ecdf0, 0xd1c685bb4dc4fb63, 0x16d7a787b7faa0d6, 0x5427466c1e109645, 
-        0x4863ce9ff6e9f891, 0x0a932f745f03ce02, 0xcd820d48a53d95b7, 0x8f72eca30cd7a324, 
-        0x0150a8daf8ab144e, 0x43a04931514122dd, 0x84b16b0dab7f7968, 0xc6418ae602954ffb, 
-        0xbc387aea7a8da4c0, 0xfec89b01d3679253, 0x39d9b93d2959c9e6, 0x7b2958d680b3ff75, 
-        0xf50b1caf74cf481f, 0xb7fbfd44dd257e8c, 0x70eadf78271b2539, 0x321a3e938ef113aa, 
-        0x2e5eb66066087d7e, 0x6cae578bcfe24bed, 0xabbf75b735dc1058, 0xe94f945c9c3626cb, 
-        0x676dd025684a91a1, 0x259d31cec1a0a732, 0xe28c13f23b9efc87, 0xa07cf2199274ca14, 
-        0x167ff3eacbaf2af1, 0x548f120162451c62, 0x939e303d987b47d7, 0xd16ed1d631917144, 
-        0x5f4c95afc5edc62e, 0x1dbc74446c07f0bd, 0xdaad56789639ab08, 0x985db7933fd39d9b, 
-        0x84193f60d72af34f, 0xc6e9de8b7ec0c5dc, 0x01f8fcb784fe9e69, 0x43081d5c2d14a8fa, 
-        0xcd2a5925d9681f90, 0x8fdab8ce70822903, 0x48cb9af28abc72b6, 0x0a3b7b1923564425, 
-        0x70428b155b4eaf1e, 0x32b26afef2a4998d, 0xf5a348c2089ac238, 0xb753a929a170f4ab, 
-        0x3971ed50550c43c1, 0x7b810cbbfce67552, 0xbc902e8706d82ee7, 0xfe60cf6caf321874, 
-        0xe224479f47cb76a0, 0xa0d4a674ee214033, 0x67c58448141f1b86, 0x253565a3bdf52d15, 
-        0xab1721da49899a7f, 0xe9e7c031e063acec, 0x2ef6e20d1a5df759, 0x6c0603e6b3b7c1ca, 
-        0xf6fae5c07d3274cd, 0xb40a042bd4d8425e, 0x731b26172ee619eb, 0x31ebc7fc870c2f78, 
-        0xbfc9838573709812, 0xfd39626eda9aae81, 0x3a28405220a4f534, 0x78d8a1b9894ec3a7, 
-        0x649c294a61b7ad73, 0x266cc8a1c85d9be0, 0xe17dea9d3263c055, 0xa38d0b769b89f6c6, 
-        0x2daf4f0f6ff541ac, 0x6f5faee4c61f773f, 0xa84e8cd83c212c8a, 0xeabe6d3395cb1a19, 
-        0x90c79d3fedd3f122, 0xd2377cd44439c7b1, 0x15265ee8be079c04, 0x57d6bf0317edaa97, 
-        0xd9f4fb7ae3911dfd, 0x9b041a914a7b2b6e, 0x5c1538adb04570db, 0x1ee5d94619af4648, 
-        0x02a151b5f156289c, 0x4051b05e58bc1e0f, 0x87409262a28245ba, 0xc5b073890b687329, 
-        0x4b9237f0ff14c443, 0x0962d61b56fef2d0, 0xce73f427acc0a965, 0x8c8315cc052a9ff6, 
-        0x3a80143f5cf17f13, 0x7870f5d4f51b4980, 0xbf61d7e80f251235, 0xfd913603a6cf24a6, 
-        0x73b3727a52b393cc, 0x31439391fb59a55f, 0xf652b1ad0167feea, 0xb4a25046a88dc879, 
-        0xa8e6d8b54074a6ad, 0xea16395ee99e903e, 0x2d071b6213a0cb8b, 0x6ff7fa89ba4afd18, 
-        0xe1d5bef04e364a72, 0xa3255f1be7dc7ce1, 0x64347d271de22754, 0x26c49cccb40811c7, 
-        0x5cbd6cc0cc10fafc, 0x1e4d8d2b65facc6f, 0xd95caf179fc497da, 0x9bac4efc362ea149, 
-        0x158e0a85c2521623, 0x577eeb6e6bb820b0, 0x906fc95291867b05, 0xd29f28b9386c4d96, 
-        0xcedba04ad0952342, 0x8c2b41a1797f15d1, 0x4b3a639d83414e64, 0x09ca82762aab78f7, 
-        0x87e8c60fded7cf9d, 0xc51827e4773df90e, 0x020905d88d03a2bb, 0x40f9e43324e99428, 
-        0x2cffe7d5975e55e2, 0x6e0f063e3eb46371, 0xa91e2402c48a38c4, 0xebeec5e96d600e57, 
-        0x65cc8190991cb93d, 0x273c607b30f68fae, 0xe02d4247cac8d41b, 0xa2dda3ac6322e288, 
-        0xbe992b5f8bdb8c5c, 0xfc69cab42231bacf, 0x3b78e888d80fe17a, 0x7988096371e5d7e9, 
-        0xf7aa4d1a85996083, 0xb55aacf12c735610, 0x724b8ecdd64d0da5, 0x30bb6f267fa73b36, 
-        0x4ac29f2a07bfd00d, 0x08327ec1ae55e69e, 0xcf235cfd546bbd2b, 0x8dd3bd16fd818bb8, 
-        0x03f1f96f09fd3cd2, 0x41011884a0170a41, 0x86103ab85a2951f4, 0xc4e0db53f3c36767, 
-        0xd8a453a01b3a09b3, 0x9a54b24bb2d03f20, 0x5d45907748ee6495, 0x1fb5719ce1045206, 
-        0x919735e51578e56c, 0xd367d40ebc92d3ff, 0x1476f63246ac884a, 0x568617d9ef46bed9, 
-        0xe085162ab69d5e3c, 0xa275f7c11f7768af, 0x6564d5fde549331a, 0x279434164ca30589, 
-        0xa9b6706fb8dfb2e3, 0xeb46918411358470, 0x2c57b3b8eb0bdfc5, 0x6ea7525342e1e956, 
-        0x72e3daa0aa188782, 0x30133b4b03f2b111, 0xf7021977f9cceaa4, 0xb5f2f89c5026dc37, 
-        0x3bd0bce5a45a6b5d, 0x79205d0e0db05dce, 0xbe317f32f78e067b, 0xfcc19ed95e6430e8, 
-        0x86b86ed5267cdbd3, 0xc4488f3e8f96ed40, 0x0359ad0275a8b6f5, 0x41a94ce9dc428066, 
-        0xcf8b0890283e370c, 0x8d7be97b81d4019f, 0x4a6acb477bea5a2a, 0x089a2aacd2006cb9, 
-        0x14dea25f3af9026d, 0x562e43b4931334fe, 0x913f6188692d6f4b, 0xd3cf8063c0c759d8, 
+        0x0000000000000000, 0x42f0e1eba9ea3693, 0x85e1c3d753d46d26, 0xc711223cfa3e5bb5,
+        0x493366450e42ecdf, 0x0bc387aea7a8da4c, 0xccd2a5925d9681f9, 0x8e224479f47cb76a,
+        0x9266cc8a1c85d9be, 0xd0962d61b56fef2d, 0x17870f5d4f51b498, 0x5577eeb6e6bb820b,
+        0xdb55aacf12c73561, 0x99a54b24bb2d03f2, 0x5eb4691841135847, 0x1c4488f3e8f96ed4,
+        0x663d78ff90e185ef, 0x24cd9914390bb37c, 0xe3dcbb28c335e8c9, 0xa12c5ac36adfde5a,
+        0x2f0e1eba9ea36930, 0x6dfeff5137495fa3, 0xaaefdd6dcd770416, 0xe81f3c86649d3285,
+        0xf45bb4758c645c51, 0xb6ab559e258e6ac2, 0x71ba77a2dfb03177, 0x334a9649765a07e4,
+        0xbd68d2308226b08e, 0xff9833db2bcc861d, 0x388911e7d1f2dda8, 0x7a79f00c7818eb3b,
+        0xcc7af1ff21c30bde, 0x8e8a101488293d4d, 0x499b3228721766f8, 0x0b6bd3c3dbfd506b,
+        0x854997ba2f81e701, 0xc7b97651866bd192, 0x00a8546d7c558a27, 0x4258b586d5bfbcb4,
+        0x5e1c3d753d46d260, 0x1cecdc9e94ace4f3, 0xdbfdfea26e92bf46, 0x990d1f49c77889d5,
+        0x172f5b3033043ebf, 0x55dfbadb9aee082c, 0x92ce98e760d05399, 0xd03e790cc93a650a,
+        0xaa478900b1228e31, 0xe8b768eb18c8b8a2, 0x2fa64ad7e2f6e317, 0x6d56ab3c4b1cd584,
+        0xe374ef45bf6062ee, 0xa1840eae168a547d, 0x66952c92ecb40fc8, 0x2465cd79455e395b,
+        0x3821458aada7578f, 0x7ad1a461044d611c, 0xbdc0865dfe733aa9, 0xff3067b657990c3a,
+        0x711223cfa3e5bb50, 0x33e2c2240a0f8dc3, 0xf4f3e018f031d676, 0xb60301f359dbe0e5,
+        0xda050215ea6c212f, 0x98f5e3fe438617bc, 0x5fe4c1c2b9b84c09, 0x1d14202910527a9a,
+        0x93366450e42ecdf0, 0xd1c685bb4dc4fb63, 0x16d7a787b7faa0d6, 0x5427466c1e109645,
+        0x4863ce9ff6e9f891, 0x0a932f745f03ce02, 0xcd820d48a53d95b7, 0x8f72eca30cd7a324,
+        0x0150a8daf8ab144e, 0x43a04931514122dd, 0x84b16b0dab7f7968, 0xc6418ae602954ffb,
+        0xbc387aea7a8da4c0, 0xfec89b01d3679253, 0x39d9b93d2959c9e6, 0x7b2958d680b3ff75,
+        0xf50b1caf74cf481f, 0xb7fbfd44dd257e8c, 0x70eadf78271b2539, 0x321a3e938ef113aa,
+        0x2e5eb66066087d7e, 0x6cae578bcfe24bed, 0xabbf75b735dc1058, 0xe94f945c9c3626cb,
+        0x676dd025684a91a1, 0x259d31cec1a0a732, 0xe28c13f23b9efc87, 0xa07cf2199274ca14,
+        0x167ff3eacbaf2af1, 0x548f120162451c62, 0x939e303d987b47d7, 0xd16ed1d631917144,
+        0x5f4c95afc5edc62e, 0x1dbc74446c07f0bd, 0xdaad56789639ab08, 0x985db7933fd39d9b,
+        0x84193f60d72af34f, 0xc6e9de8b7ec0c5dc, 0x01f8fcb784fe9e69, 0x43081d5c2d14a8fa,
+        0xcd2a5925d9681f90, 0x8fdab8ce70822903, 0x48cb9af28abc72b6, 0x0a3b7b1923564425,
+        0x70428b155b4eaf1e, 0x32b26afef2a4998d, 0xf5a348c2089ac238, 0xb753a929a170f4ab,
+        0x3971ed50550c43c1, 0x7b810cbbfce67552, 0xbc902e8706d82ee7, 0xfe60cf6caf321874,
+        0xe224479f47cb76a0, 0xa0d4a674ee214033, 0x67c58448141f1b86, 0x253565a3bdf52d15,
+        0xab1721da49899a7f, 0xe9e7c031e063acec, 0x2ef6e20d1a5df759, 0x6c0603e6b3b7c1ca,
+        0xf6fae5c07d3274cd, 0xb40a042bd4d8425e, 0x731b26172ee619eb, 0x31ebc7fc870c2f78,
+        0xbfc9838573709812, 0xfd39626eda9aae81, 0x3a28405220a4f534, 0x78d8a1b9894ec3a7,
+        0x649c294a61b7ad73, 0x266cc8a1c85d9be0, 0xe17dea9d3263c055, 0xa38d0b769b89f6c6,
+        0x2daf4f0f6ff541ac, 0x6f5faee4c61f773f, 0xa84e8cd83c212c8a, 0xeabe6d3395cb1a19,
+        0x90c79d3fedd3f122, 0xd2377cd44439c7b1, 0x15265ee8be079c04, 0x57d6bf0317edaa97,
+        0xd9f4fb7ae3911dfd, 0x9b041a914a7b2b6e, 0x5c1538adb04570db, 0x1ee5d94619af4648,
+        0x02a151b5f156289c, 0x4051b05e58bc1e0f, 0x87409262a28245ba, 0xc5b073890b687329,
+        0x4b9237f0ff14c443, 0x0962d61b56fef2d0, 0xce73f427acc0a965, 0x8c8315cc052a9ff6,
+        0x3a80143f5cf17f13, 0x7870f5d4f51b4980, 0xbf61d7e80f251235, 0xfd913603a6cf24a6,
+        0x73b3727a52b393cc, 0x31439391fb59a55f, 0xf652b1ad0167feea, 0xb4a25046a88dc879,
+        0xa8e6d8b54074a6ad, 0xea16395ee99e903e, 0x2d071b6213a0cb8b, 0x6ff7fa89ba4afd18,
+        0xe1d5bef04e364a72, 0xa3255f1be7dc7ce1, 0x64347d271de22754, 0x26c49cccb40811c7,
+        0x5cbd6cc0cc10fafc, 0x1e4d8d2b65facc6f, 0xd95caf179fc497da, 0x9bac4efc362ea149,
+        0x158e0a85c2521623, 0x577eeb6e6bb820b0, 0x906fc95291867b05, 0xd29f28b9386c4d96,
+        0xcedba04ad0952342, 0x8c2b41a1797f15d1, 0x4b3a639d83414e64, 0x09ca82762aab78f7,
+        0x87e8c60fded7cf9d, 0xc51827e4773df90e, 0x020905d88d03a2bb, 0x40f9e43324e99428,
+        0x2cffe7d5975e55e2, 0x6e0f063e3eb46371, 0xa91e2402c48a38c4, 0xebeec5e96d600e57,
+        0x65cc8190991cb93d, 0x273c607b30f68fae, 0xe02d4247cac8d41b, 0xa2dda3ac6322e288,
+        0xbe992b5f8bdb8c5c, 0xfc69cab42231bacf, 0x3b78e888d80fe17a, 0x7988096371e5d7e9,
+        0xf7aa4d1a85996083, 0xb55aacf12c735610, 0x724b8ecdd64d0da5, 0x30bb6f267fa73b36,
+        0x4ac29f2a07bfd00d, 0x08327ec1ae55e69e, 0xcf235cfd546bbd2b, 0x8dd3bd16fd818bb8,
+        0x03f1f96f09fd3cd2, 0x41011884a0170a41, 0x86103ab85a2951f4, 0xc4e0db53f3c36767,
+        0xd8a453a01b3a09b3, 0x9a54b24bb2d03f20, 0x5d45907748ee6495, 0x1fb5719ce1045206,
+        0x919735e51578e56c, 0xd367d40ebc92d3ff, 0x1476f63246ac884a, 0x568617d9ef46bed9,
+        0xe085162ab69d5e3c, 0xa275f7c11f7768af, 0x6564d5fde549331a, 0x279434164ca30589,
+        0xa9b6706fb8dfb2e3, 0xeb46918411358470, 0x2c57b3b8eb0bdfc5, 0x6ea7525342e1e956,
+        0x72e3daa0aa188782, 0x30133b4b03f2b111, 0xf7021977f9cceaa4, 0xb5f2f89c5026dc37,
+        0x3bd0bce5a45a6b5d, 0x79205d0e0db05dce, 0xbe317f32f78e067b, 0xfcc19ed95e6430e8,
+        0x86b86ed5267cdbd3, 0xc4488f3e8f96ed40, 0x0359ad0275a8b6f5, 0x41a94ce9dc428066,
+        0xcf8b0890283e370c, 0x8d7be97b81d4019f, 0x4a6acb477bea5a2a, 0x089a2aacd2006cb9,
+        0x14dea25f3af9026d, 0x562e43b4931334fe, 0x913f6188692d6f4b, 0xd3cf8063c0c759d8,
         0x5dedc41a34bbeeb2, 0x1f1d25f19d51d821, 0xd80c07cd676f8394, 0x9afce626ce85b507
     };
     u8      *p;
 
-    if(!str) {
+    if (!str) {
         printf("\nError: ttarch2_hash NULL pointer\n");
         exit(1);
     }
 
-    for(p = str; *p; p++) {
+    for (p = str; *p; p++) {
         crc = ttarch2_hash_crctable[(tolower(*p) ^ (crc >> (u64)(64 - 8))) & 0xff] ^ (crc << (u64)8);
     }
     return crc;
@@ -503,15 +503,15 @@ u64 ttarch2_hash(u64 crc, u8 *str) {
 
 
 int ttarch_import_lua(u8 *ext, u8 *buff, u64 *size, int encrypt) {
-    if(ext && (!stricmp(ext, ".lua") || !stricmp(ext, ".lenc"))) {
-        if(IS_LUA(buff) || (encrypt && (gamenum >= 58))) {
-            if(gamenum >= 58) {
+    if (ext && (!stricmp(ext, ".lua") || !stricmp(ext, ".lenc"))) {
+        if (IS_LUA(buff) || (encrypt && (gamenum >= 58))) {
+            if (gamenum >= 58) {
                 mymemmove(buff + 4, buff, *size);
                 *size += 4;
                 memcpy(buff, "\x1bLEo", 4);
                 blowfish(buff + 4, *size - 4, encrypt);
-            } else if(gamenum >= 56) {
-                if(*size < 4) return -1;
+            } else if (gamenum >= 56) {
+                if (*size < 4) return -1;
                 memcpy(buff, "\x1bLEn", 4);
                 blowfish(buff + 4, *size - 4, encrypt);
             } else {
@@ -535,9 +535,9 @@ u64 ttarch_import(FILE *fdo, u8 *fname) {
 
     ext = strrchr(fname, '.');
 
-    if(fdo) printf("- import %s\n", fname);
+    if (fdo) printf("- import %s\n", fname);
     fd = fopen(fname, "rb");
-    if(!fd) std_err();
+    if (!fd) std_err();
     fstat(fileno(fd), &xstat);
     size = xstat.st_size;
     myalloc(&buff, size, &buffsz);
@@ -548,7 +548,7 @@ u64 ttarch_import(FILE *fdo, u8 *fname) {
 
     ttarch_meta_crypt(buff, size, 1);
 
-    if(fdo) myfw(fdo, buff, size);
+    if (fdo) myfw(fdo, buff, size);
 
     return size;
 }
@@ -559,7 +559,7 @@ u64 pad_it(u64 num, u64 pad) {
     u64     t;
 
     t = num % pad;
-    if(t) num += pad - t;
+    if (t) num += pad - t;
     return(num);
 }
 
@@ -572,8 +572,8 @@ u8 *import_filename(u8 *fname) {
     u8      *ext;
 
     ext = strrchr(fname, '.');
-    if(ext && !stricmp(ext, ".lua")) {
-        if(gamenum < 56) {  // the games before Tales from the Borderlands need the lenc extension
+    if (ext && !stricmp(ext, ".lua")) {
+        if (gamenum < 56) {  // the games before Tales from the Borderlands need the lenc extension
             myalloc(&buff, (ext - fname) + 16, &buffsz);
             sprintf(buff, "%.*s.lenc", ext - fname, fname);
             return buff;
@@ -589,13 +589,13 @@ void build_sort_ttarch2_crc_names(files_t *files, u32 tot) {
     u32     i,
             j;
 
-    for(i = 0; i < tot; i++) {
+    for (i = 0; i < tot; i++) {
         files[i].name_crc = ttarch2_hash(0, import_filename(files[i].name));
     }
 
-    for(i = 0; i < (tot - 1); i++) {
-        for(j = i + 1; j < tot; j++) {
-            if(files[j].name_crc < files[i].name_crc) {
+    for (i = 0; i < (tot - 1); i++) {
+        for (j = i + 1; j < tot; j++) {
+            if (files[j].name_crc < files[i].name_crc) {
                 memcpy(&tmp,      &files[i], sizeof(files_t));
                 memcpy(&files[i], &files[j], sizeof(files_t));
                 memcpy(&files[j], &tmp,      sizeof(files_t));
@@ -627,9 +627,9 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
             *ext;
 
     ext = strrchr(output_name, '.');
-    if(ext && !stricmp(ext, ".ttarch2")) version = 7;
+    if (ext && !stricmp(ext, ".ttarch2")) version = 7;
 
-    if(version == DEFAULT_VERSION) {
+    if (version == DEFAULT_VERSION) {
         printf("\n"
             "Error: you must use the -V option with the rebuild one\n"
             "       for example -V 7 for Monkey Island, you can see the version of the\n"
@@ -646,31 +646,31 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
     // fix the size, for example the Lua files add the magic at the beginning (size + 4).
     // yeah, it takes some resources but makes the code a lot simpler and easy to update in future.
     printf("- collecting the new files sizes\n");
-    for(i = 0; i < tot; i++) {
+    for (i = 0; i < tot; i++) {
         files[i].size = ttarch_import(NULL, files[i].name);
     }
     printf("- files sizes fixed\n");
 
-    if(ext && !stricmp(ext, ".ttarch2")) {
+    if (ext && !stricmp(ext, ".ttarch2")) {
 
         build_sort_ttarch2_crc_names(files, tot);
 
         info_size = tot * (8 + 8 + 4 + 4 + 2 + 2);
-        for(i = 0; i < tot; i++) {
+        for (i = 0; i < tot; i++) {
             names_size += strlen(import_filename(files[i].name)) + 1;
             data_size += files[i].size;
         }
         names_size = pad_it(names_size, 0x10000);
 
         info_table = calloc(info_size, 1);
-        if(!info_table) std_err();
+        if (!info_table) std_err();
         names_table = calloc(names_size, 1);
-        if(!names_table) std_err();
+        if (!names_table) std_err();
 
         fputxx(fdo, 0x5454434e, 4);  // NCTT
         fputxx(fdo, 4 + 4 + 4 + 4 + info_size + names_size + data_size, 8);
 
-        if(gamenum >= 58) {
+        if (gamenum >= 58) {
             fputxx(fdo, 0x54544134, 4);  // 4ATT
         } else {
             fputxx(fdo, 0x54544133, 4);  // 3ATT
@@ -681,7 +681,7 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
 
         it = info_table;
         nt = names_table;
-        for(i = 0; i < tot; i++) {
+        for (i = 0; i < tot; i++) {
             it += putxx(it, files[i].name_crc, 8);
             it += putxx(it, off,           8);
             it += putxx(it, files[i].size, 4);
@@ -700,40 +700,40 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
     } else {
 
         info_size += 4;     // folders
-        for(i = 0; folders[i]; i++) {
+        for (i = 0; folders[i]; i++) {
             info_size += 4 + strlen(folders[i]);
             totdirs++;
         }
         info_size += 4;     // files
-        for(i = 0; i < tot; i++) {
+        for (i = 0; i < tot; i++) {
             info_size += 4 + strlen(import_filename(files[i].name)) + 4 + 4 + 4;
             data_size += files[i].size;
         }
-        if(version <= 2) {
+        if (version <= 2) {
             info_size += 4 + 4 + 4 + 4;
         }
         info_size = pad_it(info_size, 8);   // 8 for blow_fish
         info_table = calloc(info_size, 1);
-        if(!info_table) std_err();
+        if (!info_table) std_err();
 
         printf("- start building of the file\n");
         fputxx(fdo, version,    4); // version
         fputxx(fdo, 1,          4); // info_mode
         fputxx(fdo, 2,          4); // type3
-        if(version >= 3) {
+        if (version >= 3) {
             fputxx(fdo, 1,      4); // files_mode
         }
-        if(version >= 3) {
+        if (version >= 3) {
             fputxx(fdo, 0,      4); // ttarch_tot_idx
             fputxx(fdo, data_size, 4);
-            if(version >= 4) {
+            if (version >= 4) {
                 fputxx(fdo, 0,  4);
                 fputxx(fdo, 0,  4);
-                if(version >= 7) {
+                if (version >= 7) {
                     fputxx(fdo, xmode,  4);
                     fputxx(fdo, xmode,  4);
                     fputxx(fdo, 0x40,   4);
-                    if(version >= 8) {
+                    if (version >= 8) {
                         fputxx(fdo, 0,  1);
                     }
                 }
@@ -743,12 +743,12 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
 
         p = info_table;
         p += putxx(p, totdirs,  4); // folders
-        for(i = 0; i < totdirs; i++) {
+        for (i = 0; i < totdirs; i++) {
             p += putxx(p, strlen(folders[i]), 4);
             p += sprintf(p, "%s", folders[i]);
         }
         p += putxx(p, tot,      4); // files
-        for(i = 0; i < tot; i++) {
+        for (i = 0; i < tot; i++) {
             p += putxx(p, strlen(import_filename(files[i].name)), 4);
             p += sprintf(p, "%s", import_filename(files[i].name));
             p += putxx(p, 0,    4);
@@ -756,13 +756,13 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
             p += putxx(p, files[i].size, 4);
             off += files[i].size;
         }
-        if(version <= 2) {
+        if (version <= 2) {
             p += putxx(p, info_size + 4, 4);
             p += putxx(p, data_size, 4);
             p += putxx(p, 0xfeedface, 4);
             p += putxx(p, 0xfeedface, 4);
         }
-        if(pad_it(p - info_table, 8) != info_size) {
+        if (pad_it(p - info_table, 8) != info_size) {
             printf("\nError: problem in the info_size calculated by ttarchext (%d, %d)\n", p - info_table, info_size);
             exit(1);
         }
@@ -772,10 +772,10 @@ u32 rebuild_it(u8 *output_name, FILE *fdo) {
     }
 
     size_check = 0;
-    for(i = 0; i < tot; i++) {
+    for (i = 0; i < tot; i++) {
         size_check += ttarch_import(fdo, files[i].name);
     }
-    if(size_check != data_size) {
+    if (size_check != data_size) {
         printf("\nError: problem in the data_size calculated by ttarchext (%d, %d)\n", (u32)size_check, (u32)data_size);
         exit(1);
     }
@@ -790,15 +790,15 @@ files_t *add_files(u8 *fname, u64 fsize, int *ret_files) {
                     filesn  = 0;
     static files_t  *files  = NULL;
 
-    if(ret_files) {
+    if (ret_files) {
         *ret_files = filesi;
         return(files);
     }
 
-    if(filesi >= filesn) {
+    if (filesi >= filesn) {
         filesn += 1024;
         files = realloc(files, sizeof(files_t) * filesn);
-        if(!files) std_err();
+        if (!files) std_err();
     }
     files[filesi].name   = strdup(fname);
     files[filesi].offset = 0;
@@ -819,10 +819,10 @@ int recursive_dir(u8 *filedir) {
     WIN32_FIND_DATA wfd;
     HANDLE  hFind;
 
-    if(winnt < 0) {
+    if (winnt < 0) {
         osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
         GetVersionEx(&osver);
-        if(osver.dwPlatformId >= VER_PLATFORM_WIN32_NT) {
+        if (osver.dwPlatformId >= VER_PLATFORM_WIN32_NT) {
             winnt = 1;
         } else {
             winnt = 0;
@@ -833,19 +833,19 @@ int recursive_dir(u8 *filedir) {
     strcpy(filedir + plen, "\\*.*");
     plen++;
 
-    if(winnt) { // required to avoid problems with Vista and Windows7!
+    if (winnt) { // required to avoid problems with Vista and Windows7!
         hFind = FindFirstFileEx(filedir, FindExInfoStandard, &wfd, FindExSearchNameMatch, NULL, 0);
     } else {
         hFind = FindFirstFile(filedir, &wfd);
     }
-    if(hFind == INVALID_HANDLE_VALUE) return(0);
+    if (hFind == INVALID_HANDLE_VALUE) return(0);
     do {
-        if(!strcmp(wfd.cFileName, ".") || !strcmp(wfd.cFileName, "..")) continue;
+        if (!strcmp(wfd.cFileName, ".") || !strcmp(wfd.cFileName, "..")) continue;
 
         strcpy(filedir + plen, wfd.cFileName);
 
-        if(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            if(recursive_dir(filedir) < 0) goto quit;
+        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            if (recursive_dir(filedir) < 0) goto quit;
         } else {
             add_files(filedir + 2, wfd.nFileSizeLow, NULL);
         }
@@ -861,8 +861,8 @@ quit:
             i;
 
     n = scandir(filedir, &namelist, NULL, NULL);
-    if(n < 0) {
-        if(stat(filedir, &xstat) < 0) {
+    if (n < 0) {
+        if (stat(filedir, &xstat) < 0) {
             printf("**** %s", filedir);
             std_err();
         }
@@ -874,16 +874,16 @@ quit:
     strcpy(filedir + plen, "/");
     plen++;
 
-    for(i = 0; i < n; i++) {
-        if(!strcmp(namelist[i]->d_name, ".") || !strcmp(namelist[i]->d_name, "..")) continue;
+    for (i = 0; i < n; i++) {
+        if (!strcmp(namelist[i]->d_name, ".") || !strcmp(namelist[i]->d_name, "..")) continue;
         strcpy(filedir + plen, namelist[i]->d_name);
 
-        if(stat(filedir, &xstat) < 0) {
+        if (stat(filedir, &xstat) < 0) {
             printf("**** %s", filedir);
             std_err();
         }
-        if(S_ISDIR(xstat.st_mode)) {
-            if(recursive_dir(filedir) < 0) goto quit;
+        if (S_ISDIR(xstat.st_mode)) {
+            if (recursive_dir(filedir) < 0) goto quit;
         } else {
             add_files(filedir + 2, xstat.st_size, NULL);
         }
@@ -892,7 +892,7 @@ quit:
     ret = 0;
 
 quit:
-    for(; i < n; i++) FREE(namelist[i])
+    for (; i < n; i++) FREE(namelist[i])
     FREE(namelist)
 #endif
     filedir[plen - 1] = 0;
@@ -909,14 +909,14 @@ u64 crypt_it(FILE *fd, u8 *fname, u64 offset, int wanted_size /*signed!*/, int e
     u8      *ext;
 
     fname = create_dir(fname);
-    if(check_overwrite(fname) < 0) exit(1);
+    if (check_overwrite(fname) < 0) exit(1);
     ext = strrchr(fname, '.');
 
     size = get_file_size(fd);
-    if(offset > size) exit(1);
+    if (offset > size) exit(1);
 
-    if(wanted_size < 0) {
-        if(fseek(fd, offset, SEEK_SET)) std_err();
+    if (wanted_size < 0) {
+        if (fseek(fd, offset, SEEK_SET)) std_err();
         size -= offset;
     } else {
         fseek(fd, 0, SEEK_SET);
@@ -925,13 +925,13 @@ u64 crypt_it(FILE *fd, u8 *fname, u64 offset, int wanted_size /*signed!*/, int e
     myalloc(&buff, size, &buffsz);
     myfr(fd, buff, size);
 
-    if(wanted_size < 0) {
-        if(ttarch_import_lua(ext, buff, &size, encrypt) < 0) {
+    if (wanted_size < 0) {
+        if (ttarch_import_lua(ext, buff, &size, encrypt) < 0) {
             blowfish(buff, size, encrypt);
         }
     } else {
         u64     t64 = wanted_size;
-        if(ttarch_import_lua(ext, buff + offset, &t64, encrypt) < 0) {
+        if (ttarch_import_lua(ext, buff + offset, &t64, encrypt) < 0) {
             blowfish(buff + offset, t64, encrypt);
         }
     }
@@ -948,9 +948,9 @@ u8 *string2key(u8 *data) {
     u8      *ret;
 
     ret = strdup(data);
-    for(i = 0; *data; i++) {
+    for (i = 0; *data; i++) {
         while(*data && ((*data <= ' ') || (*data == '\\') || (*data == 'x'))) data++;
-        if(sscanf(data, "%02x", &n) != 1) break;
+        if (sscanf(data, "%02x", &n) != 1) break;
         ret[i] = n;
         data += 2;
     }
@@ -963,7 +963,7 @@ u8 *string2key(u8 *data) {
 u64 ttarch_getxx(FILE *fd, u8 **data, int bytes) {
     u64     ret;
 
-    if(fd) {
+    if (fd) {
         ret = fgetxx(fd, bytes);
     } else {
         ret = getxx(*data, bytes);
@@ -980,11 +980,11 @@ u8 *ttarch_fgetss(FILE *fd) {
     int     namesz;
     u8      c;
 
-    for(namesz = 0;; namesz++) {
+    for (namesz = 0;; namesz++) {
         c = ttarch_fgetxx(1, fd);
         myalloc(&buff, namesz + 1, &buffsz);
         buff[namesz] = c;
-        if(!c) break;
+        if (!c) break;
     }
     return buff;
 }
@@ -998,7 +998,7 @@ u8 *ttarch_getname(FILE *fd, u8 **data) {
 
     namesz = ttarch_getxx(fd, data, 4);
     myalloc(&buff, namesz + 1, &buffsz);
-    if(fd) {
+    if (fd) {
         myfr(fd, buff, namesz);
     } else {
         memcpy(buff, *data, namesz);
@@ -1013,9 +1013,9 @@ u8 *ttarch_getname(FILE *fd, u8 **data) {
 int ttarch_extract(FILE *fd, u8 *input_fname) {
 
     #define DUMPA \
-        if(filter_files && (check_wildcard(name, filter_files) < 0)) continue; \
+        if (filter_files && (check_wildcard(name, filter_files) < 0)) continue; \
         printf("  %08x %-10u %s\n", (u32)(ttarch_tot_idx ? offset : (ttarch_baseoff + offset)), (u32)size, name); \
-        if(list_only) { \
+        if (list_only) { \
             extracted_files++; \
             continue; \
         } \
@@ -1056,7 +1056,7 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
             *ext;
 
     ext = strrchr(input_fname, '.');
-    if(ext && strnicmp(ext, ".ttarch", 7)) {    // simple decryption of a single file... just for fun
+    if (ext && strnicmp(ext, ".ttarch", 7)) {    // simple decryption of a single file... just for fun
         size = get_file_size(fd);
         fseek(fd, 0, SEEK_SET);
 
@@ -1065,7 +1065,7 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
 
         name = strdup(input_fname);
         printf("- decrypt the single input file as %s\n", name);
-        if(list_only) {
+        if (list_only) {
             // do nothing, it's only a listing
         } else {
             ttarch_dumpa(name, buff, size, 0);
@@ -1073,13 +1073,13 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
         goto quit;
     }
 
-    if(old_mode) {  // boring old mode
+    if (old_mode) {  // boring old mode
         folders = ttarch_getxx(fd, NULL, 4);
-        for(i = 0; i < folders; i++) {
+        for (i = 0; i < folders; i++) {
             name = ttarch_getname(fd, NULL);
         }
         files = ttarch_getxx(fd, NULL, 4);
-        for(i = 0; i < files; i++) {
+        for (i = 0; i < files; i++) {
             name   = ttarch_getname(fd, NULL);
             zero   = ttarch_getxx(fd, NULL, 4);
             offset = ttarch_getxx(fd, NULL, 4);
@@ -1102,10 +1102,10 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
             ttarch_tot_idx = fgetxx(fd, 4);
             printf("- found %d compressed chunks\n", ttarch_tot_idx);
             ttarch_chunks = calloc(ttarch_tot_idx, sizeof(*ttarch_chunks));
-            if(!ttarch_chunks) std_err();
+            if (!ttarch_chunks) std_err();
 
                 dummy = fgetxx(fd, 8);
-            for(i = 0; i < ttarch_tot_idx; i++) {
+            for (i = 0; i < ttarch_tot_idx; i++) {
                 dummy2 = fgetxx(fd, 8);
                 ttarch_chunks[i] = dummy2 - dummy;
                 dummy = dummy2;
@@ -1136,13 +1136,13 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
 
     ttarch_fseek(fd, 0, SEEK_SET);
     ver = ttarch_fgetxx(4, fd);
-    if((ver & 0xffffff00) != 0x54544100) { // 3ATT
+    if ((ver & 0xffffff00) != 0x54544100) { // 3ATT
         // exists a 2ATT but I don't know it
         printf("\nError: version %08x is not supported yet\n", ver);
         exit(1);
     }
 
-    if(ver == 0x54544133) { // 3ATT
+    if (ver == 0x54544133) { // 3ATT
                    ttarch_fgetxx(4, fd);    // attention in future in case of encryption
     }
     names_size   = ttarch_fgetxx(4, fd);
@@ -1153,14 +1153,14 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
     base_offset  = names_offset + names_size;
 
     info_table = calloc(info_size, 1);
-    if(!info_table) std_err();
+    if (!info_table) std_err();
     names_table = calloc(names_size, 1);
-    if(!names_table) std_err();
+    if (!names_table) std_err();
 
     ttarch_fread(info_table,  info_size,  fd);
     ttarch_fread(names_table, names_size, fd);
     t = info_table;
-    for(i = 0; i < files; i++) {
+    for (i = 0; i < files; i++) {
                    ttarch_getxx(NULL, &t, 8);   // hash table
         offset   = ttarch_getxx(NULL, &t, 8);
         size     = ttarch_getxx(NULL, &t, 4);
@@ -1178,14 +1178,14 @@ int ttarch_extract(FILE *fd, u8 *input_fname) {
 
 
 goto_classic_mode:
-    if((version < 1) || (version > 9)) {
+    if ((version < 1) || (version > 9)) {
         printf("\nError: version %d is not supported yet\n", version);
         exit(1);
     }
     printf("- version    %d\n", version);
 
     info_mode = fgetxx(fd, 4);
-    if(/*(info_mode < 0) ||*/ (info_mode > 1)) {
+    if (/*(info_mode < 0) ||*/ (info_mode > 1)) {
         printf("\nError: info_mode %d is not supported yet\n", info_mode);
         exit(1);
     }
@@ -1194,52 +1194,52 @@ goto_classic_mode:
     type3     = fgetxx(fd, 4);
     printf("- type3      %d\n", type3);
 
-    if(version >= 3) {
+    if (version >= 3) {
         files_mode = fgetxx(fd, 4);
     }
-    if(/*(files_mode < 0)  || */ (files_mode > 2)) {
+    if (/*(files_mode < 0)  || */ (files_mode > 2)) {
         printf("\nError: files_mode %d is not supported yet\n", files_mode);
         exit(1);
     }
     printf("- files_mode %d\n", files_mode);
 
-    if(version >= 3) {
+    if (version >= 3) {
         ttarch_tot_idx = fgetxx(fd, 4);
-        if(ttarch_tot_idx) {
+        if (ttarch_tot_idx) {
             printf("- found %d compressed chunks\n", ttarch_tot_idx);
             ttarch_chunks = calloc(ttarch_tot_idx, sizeof(*ttarch_chunks));
-            if(!ttarch_chunks) std_err();
-            for(i = 0; i < ttarch_tot_idx; i++) {
+            if (!ttarch_chunks) std_err();
+            for (i = 0; i < ttarch_tot_idx; i++) {
                 ttarch_chunks[i] = fgetxx(fd, 4);
             }
         }
 
                     fgetxx(fd, 4);  // the size of the field where are stored all the files contents
-        if(version >= 4) {
+        if (version >= 4) {
             dummy = fgetxx(fd, 4);
             dummy = fgetxx(fd, 4);
-            if(version >= 7) {
+            if (version >= 7) {
                 dummy = fgetxx(fd, 4);
                 dummy = fgetxx(fd, 4);
                 ttarch_chunksz = fgetxx(fd, 4);
                 ttarch_chunksz *= 1024;
                 printf("- set chunk size to 0x%x bytes\n", ttarch_chunksz);
-                if(version >= 8) dummy = fgetxx(fd, 1);
-                if(version >= 9) dummy = fgetxx(fd, 4);
+                if (version >= 8) dummy = fgetxx(fd, 1);
+                if (version >= 9) dummy = fgetxx(fd, 4);
             }
         }
     }
 
     info_size  = fgetxx(fd, 4);
-    if((version >= 7) && files_mode >= 2) {
+    if ((version >= 7) && files_mode >= 2) {
         info_zsize = fgetxx(fd, 4);
     }
 goto_extract:
     printf("- info_table has a size of %d bytes\n", info_size);
     info_table = calloc(info_size, 1);
-    if(!info_table) std_err();
+    if (!info_table) std_err();
 
-    if((version >= 7) && (files_mode >= 2)) {
+    if ((version >= 7) && (files_mode >= 2)) {
         t = calloc(info_zsize, 1);
         myfr(fd, t, info_zsize);
         unzip(t, info_zsize, info_table, info_size);
@@ -1248,7 +1248,7 @@ goto_extract:
         myfr(fd, info_table, info_size);
     }
 
-    if(info_mode >= 1) {
+    if (info_mode >= 1) {
         printf("- decrypt info_table\n");
         blowfish(info_table, info_size, 0);
     }
@@ -1256,20 +1256,20 @@ goto_extract:
     ttarch_baseoff = ftell(fd);
     printf("- set files base offset 0x%08x\n", (u32)ttarch_baseoff);
 
-    if(files_mode >= 2) {   // not verified
-        if(info_mode > 0) ttarch_chunks_b = 1;
+    if (files_mode >= 2) {   // not verified
+        if (info_mode > 0) ttarch_chunks_b = 1;
     }
     printf("- filesystem compression: %s\n", ttarch_tot_idx  ? "on" : "off");
     printf("- filesystem encryption:  %s\n", ttarch_chunks_b ? "on" : "off");
 
     t = info_table;
-    if(dump_table) {
+    if (dump_table) {
         dumpa(dump_table, info_table, info_size, NULL, 0);
     }
 
     printf("- retrieve folders:\n");
     folders = ttarch_getxx(NULL, &t, 4);
-    for(i = 0; i < folders; i++) {
+    for (i = 0; i < folders; i++) {
         name = ttarch_getname(NULL, &t);
         printf("  %s\n", name);
     }
@@ -1279,13 +1279,13 @@ goto_extract:
         "------------------------------\n");
 
     files = ttarch_getxx(NULL, &t, 4);
-    for(i = 0; i < files; i++) {
+    for (i = 0; i < files; i++) {
         name   = ttarch_getname(NULL, &t);
         zero   = ttarch_getxx(NULL, &t, 4);
         offset = ttarch_getxx(NULL, &t, 4);
         size   = ttarch_getxx(NULL, &t, 4);
 
-        if(zero) {  // this value is just ignored in the current versions of ttarch, maybe it's for a future usage?
+        if (zero) {  // this value is just ignored in the current versions of ttarch, maybe it's for a future usage?
             printf("\nError: this file has an unknown ZERO value, contact me\n");
             exit(1);
         }
@@ -1319,7 +1319,7 @@ int ttarch_meta_crypt(u8 *data, u64 datalen, int encrypt) {
     u8      *p,
             *l;
 
-    if(datalen < 4) return(file_type);
+    if (datalen < 4) return(file_type);
 
     p = data;
     l = data + datalen;
@@ -1336,15 +1336,15 @@ int ttarch_meta_crypt(u8 *data, u64 datalen, int encrypt) {
         default:         meta = 0;                      break;  // is not a meta stream file
     }
 
-    if(blocks_size) {   // meta, just the same result
+    if (blocks_size) {   // meta, just the same result
         blocks     = (datalen - 4) / blocks_size;
         //rem_blocks = (datalen - 4) % blocks_size;
 
-        for(i = 0; i < blocks; i++) {
-            if(p >= l) break;
-            if(!(i % blocks_crypt)) {
+        for (i = 0; i < blocks; i++) {
+            if (p >= l) break;
+            if (!(i % blocks_crypt)) {
                 blowfish(p, blocks_size, encrypt);
-            } else if(!(i % blocks_clean) && (i > 0)) {
+            } else if (!(i % blocks_clean) && (i > 0)) {
                 // skip this block
             } else {
                 xor(p, blocks_size, 0xff);
@@ -1369,12 +1369,12 @@ int ttarch_fseek(FILE *stream, u64 offset, int origin) {
     u32     i,
             idx;
 
-    if(!ttarch_tot_idx) {
+    if (!ttarch_tot_idx) {
         off = offset;
     } else {
         idx = offset / ttarch_chunksz;
-        if(idx > ttarch_tot_idx) return(-1);
-        for(i = 0; i < idx; i++) {
+        if (idx > ttarch_tot_idx) return(-1);
+        for (i = 0; i < idx; i++) {
             off += ttarch_chunks[i];
         }
         ttarch_rem = offset % ttarch_chunksz;
@@ -1401,34 +1401,34 @@ u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
             len,
             currsz;
 
-    if(!ttarch_tot_idx) {
+    if (!ttarch_tot_idx) {
         myfr(stream, ptr, size);
-        if(ttarch_chunks_b) blowfish(ptr, size, 0);
+        if (ttarch_chunks_b) blowfish(ptr, size, 0);
         ttarch_offset += size;
         return(size);
     }
 
-    if(!in || !out) {
+    if (!in || !out) {
         in  = calloc(ttarch_chunksz, 1);
         out = calloc(ttarch_chunksz, 1);
-        if(!in || !out) std_err();
+        if (!in || !out) std_err();
     }
 
     ttarch_fseek(stream, ttarch_offset, SEEK_SET);
 
     currsz = 0;
-    for(idx = ttarch_offset / ttarch_chunksz; idx < ttarch_tot_idx; idx++) {
-        if(currsz >= size) break;
+    for (idx = ttarch_offset / ttarch_chunksz; idx < ttarch_tot_idx; idx++) {
+        if (currsz >= size) break;
         myfr(stream, in, ttarch_chunks[idx]);
-        if(ttarch_chunks_b) blowfish(in, ttarch_chunks[idx], 0);
-        if(ttarch_chunks[idx] == ttarch_chunksz) {
+        if (ttarch_chunks_b) blowfish(in, ttarch_chunks[idx], 0);
+        if (ttarch_chunks[idx] == ttarch_chunksz) {
             len = ttarch_chunksz;
             memcpy(out, in, len);
         } else {
             len = unzip(in, ttarch_chunks[idx], out, ttarch_chunksz);
         }
-        if(ttarch_rem) {
-            if(ttarch_rem > len) {
+        if (ttarch_rem) {
+            if (ttarch_rem > len) {
                 ttarch_rem -= len;
                 continue;
             }
@@ -1437,15 +1437,15 @@ u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
             ttarch_rem = 0;
         }
         currsz += len;
-        if(currsz > size) {
+        if (currsz > size) {
             len -= (currsz - size);
             currsz = size;
         }
-        if(ptr) {
+        if (ptr) {
             memcpy(ptr, out, len);
             ptr += len;
         }
-        if(currsz >= size) break;
+        if (currsz >= size) break;
     }
     ttarch_offset += currsz;
     ttarch_rem    = ttarch_offset % ttarch_chunksz;
@@ -1457,7 +1457,7 @@ u64 ttarch_fread(void *ptr, u64 size, FILE *stream) {
 void xor(u8 *data, u64 datalen, int xornum) {
     u64     i;
 
-    for(i = 0; i < datalen; i++) {
+    for (i = 0; i < datalen; i++) {
         data[i] ^= xornum;
     }
 }
@@ -1468,30 +1468,30 @@ void blowfish(u8 *data, u64 datalen, int encrypt) {
     static  blf_ctx *blowfish_ctx = NULL;
     static  int old_version = -1;
 
-    if(!blowfish_ctx || (version != old_version)) { // init
-        if(!blowfish_ctx) {
+    if (!blowfish_ctx || (version != old_version)) { // init
+        if (!blowfish_ctx) {
             blowfish_ctx = calloc(1, sizeof(blf_ctx));
-            if(!blowfish_ctx) std_err();
+            if (!blowfish_ctx) std_err();
         }
-        if(version >= 7) {
+        if (version >= 7) {
             blf_key7(blowfish_ctx, mykey, strlen(mykey));
         } else {
             blf_key(blowfish_ctx, mykey, strlen(mykey));
         }
     }
 
-    if(!data) return;
+    if (!data) return;
 
     // with ttarch2 version is ever a big number
 
-    if(encrypt) {
-        if(version >= 7) {
+    if (encrypt) {
+        if (version >= 7) {
             blf_enc7(blowfish_ctx, (void *)data, datalen / 8);
         } else {
             blf_enc (blowfish_ctx, (void *)data, datalen / 8);
         }
     } else {
-        if(version >= 7) {
+        if (version >= 7) {
             blf_dec7(blowfish_ctx, (void *)data, datalen / 8);
         } else {
             blf_dec (blowfish_ctx, (void *)data, datalen / 8);
@@ -1508,28 +1508,28 @@ u8 *scan_search(u8 *buff, u64 *buffsz, u8 *find, int findsz) {
             tmpsz;
     u8      tmp[MAX_SCAN_CRYPT];
 
-    if(findsz > *buffsz) return(NULL);
-    if(findsz > MAX_SCAN_CRYPT) {
+    if (findsz > *buffsz) return(NULL);
+    if (findsz > MAX_SCAN_CRYPT) {
         printf("\nError: you need to modify MAX_SCAN_CRYPT in scan_search\n");
         exit(1);
     }
 
     tmpsz = MAX_SCAN_SIZE;   // it's not needed to scan the whole file
-    if(*buffsz < tmpsz) tmpsz = *buffsz;
+    if (*buffsz < tmpsz) tmpsz = *buffsz;
     tmpsz -= findsz;
 
-    for(i = 0; i <= tmpsz; i++) {
-        if(!memcmp(buff + i, find, findsz)) {
+    for (i = 0; i <= tmpsz; i++) {
+        if (!memcmp(buff + i, find, findsz)) {
             buff    += i;
             *buffsz -= i;
             return(buff);
         }
     }
 
-    for(i = 0; i <= tmpsz; i++) {
+    for (i = 0; i <= tmpsz; i++) {
         memcpy(tmp, buff + i, MAX_SCAN_CRYPT);
         blowfish(tmp, MAX_SCAN_CRYPT, 0);
-        if(!memcmp(tmp, find, findsz)) {
+        if (!memcmp(tmp, find, findsz)) {
             buff    += i;
             *buffsz -= i;
             blowfish(buff, 0x800, 0);
@@ -1552,44 +1552,44 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
 
     p    = data;
     size = *datalen;
-    if(!meta_extract) return(data);
-    if(size < 4) return(data);
+    if (!meta_extract) return(data);
+    if (size < 4) return(data);
 
     file_type = ttarch_getxx(NULL, &p, 4);
 
     ret = NULL;
 
-    if(file_type == 0x4d535635) {   // 5VSM
+    if (file_type == 0x4d535635) {   // 5VSM
         t = ttarch_getxx(NULL, &p, 4) + ttarch_getxx(NULL, &p, 4);
         t2 = ttarch_getxx(NULL, &p, 4); // I'm in doubt about this value
-        if((t + t2) <= size) t += t2;
-        if(t > size) t = size;
+        if ((t + t2) <= size) t += t2;
+        if (t > size) t = size;
         p = data + size - t;
         size = t;
         ret = p;
     }
 
-    if(!stricmp(ext, ".font") || !stricmp(ext, ".d3dtx")) {
+    if (!stricmp(ext, ".font") || !stricmp(ext, ".d3dtx")) {
         size -= 4;
         ret = scan_search(p, &size, "DDS ", 4);
-        if(ret) strcpy(ext, ".dds");
+        if (ret) strcpy(ext, ".dds");
         else    { ret = p; size += 4; } // restore
 
-    } else if(!stricmp(ext, ".aud")) {
+    } else if (!stricmp(ext, ".aud")) {
         size -= 4;
         ret = scan_search(p, &size, "OggS", 4);
-        if(ret) strcpy(ext, ".ogg");
+        if (ret) strcpy(ext, ".ogg");
         else    { ret = p; size += 4; } // restore
 
-    } else if(!stricmp(ext, ".lenc") || !stricmp(ext, ".lua")) {
+    } else if (!stricmp(ext, ".lenc") || !stricmp(ext, ".lua")) {
 
-        if(IS_LUA2(data)) {
-            if((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
+        if (IS_LUA2(data)) {
+            if ((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
             blowfish(data + 4, size - 4, 0);
             memcpy(data, "\x1bLua", 4);
 
-        } else if(IS_LUA3(data)) {
-            if((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
+        } else if (IS_LUA3(data)) {
+            if ((version >= 0) && (version < 7)) version = 7; // do NOT enable this: else version = 1;
             blowfish(data + 4, size - 4, 0);
             size -= 4;  // no header
             ret = data + 4;
@@ -1597,11 +1597,11 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
         } else {
             memcpy(tmp, data, 8);
             blowfish(tmp, 8, 0);
-            if(!IS_LUA(tmp)) {
-                if((version >= 0) && (version < 7)) version = 7; else version = 1;
+            if (!IS_LUA(tmp)) {
+                if ((version >= 0) && (version < 7)) version = 7; else version = 1;
                 memcpy(tmp, data, 8);
                 blowfish(tmp, 8, 0);
-                if(!IS_LUA(tmp)) {
+                if (!IS_LUA(tmp)) {
                     return data;
                     //printf("\nError: the input lenc/lua file can't be decrypted (the header doesn't match)\n");
                     //exit(1);
@@ -1611,7 +1611,7 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
         }
         strcpy(ext, ".lua");
     }
-    if(ret && (size >= 0)) {
+    if (ret && (size >= 0)) {
         *datalen = size;
     } else {
         ret = data;
@@ -1624,14 +1624,14 @@ u8 *ttarch_meta_dump(u8 *ext, u8 *data, u64 *datalen) { // completely experiment
 int mymemmove(u8 *dst, u8 *src, int size) {
     int     i;
 
-    if(!dst || !src) return(0);
-    if(size < 0) size = strlen(src) + 1;
-    if(dst < src) {
-        for(i = 0; i < size; i++) {
+    if (!dst || !src) return(0);
+    if (size < 0) size = strlen(src) + 1;
+    if (dst < src) {
+        for (i = 0; i < size; i++) {
             dst[i] = src[i];
         }
     } else {
-        for(i = size - 1; i >= 0; i--) {
+        for (i = size - 1; i >= 0; i--) {
             dst[i] = src[i];
         }
     }
@@ -1646,20 +1646,20 @@ int ttarch_dumpa(u8 *fname, u8 *data, u64 size, int already_decrypted) {
             *ext,
             *p;
 
-    if(!already_decrypted) {
+    if (!already_decrypted) {
         ttarch_meta_crypt(data, size, 0);
     }
     ext = strrchr(fname, '.');
-    if(ext) {
+    if (ext) {
         // force the decryption of lenc files, it seems a good idea!
         int old_meta_extract = meta_extract;
-        if(!stricmp(ext, ".lenc") || !stricmp(ext, ".lua")) meta_extract = 1;
-        if(meta_extract) {
+        if (!stricmp(ext, ".lenc") || !stricmp(ext, ".lua")) meta_extract = 1;
+        if (meta_extract) {
             data = ttarch_meta_dump(ext, data, &size);
-            if(!stricmp(ext, ".landb") && ttgtools_fix && memcmp(data, "ERTM", 4)) {
+            if (!stricmp(ext, ".landb") && ttgtools_fix && memcmp(data, "ERTM", 4)) {
                 more_size = 4 + 4 + 0x60;
                 more = calloc(more_size, 1);
-                if(!more) std_err();
+                if (!more) std_err();
                 memcpy(more, "ERTM", 4);
                 putxx(more + 4, 8, 4);
                 memset(more + 8, 0xff, 0x60);
@@ -1669,22 +1669,22 @@ int ttarch_dumpa(u8 *fname, u8 *data, u64 size, int already_decrypted) {
     }
 
     // the following is a set of filename cleaning instructions to avoid that files or data with special names are not saved
-    if(fname) {
-        if(fname[1] == ':') fname += 2;
-        for(p = fname; *p && (*p != '\n') && (*p != '\r'); p++) {
-            if(strchr("?%*:|\"<>", *p)) {    // invalid filename chars not supported by the most used file systems
+    if (fname) {
+        if (fname[1] == ':') fname += 2;
+        for (p = fname; *p && (*p != '\n') && (*p != '\r'); p++) {
+            if (strchr("?%*:|\"<>", *p)) {    // invalid filename chars not supported by the most used file systems
                 *p = '_';
             }
         }
         *p = 0;
-        for(p--; (p >= fname) && ((*p == ' ') || (*p == '.')); p--) *p = 0;   // remove final spaces and dots
+        for (p--; (p >= fname) && ((*p == ' ') || (*p == '.')); p--) *p = 0;   // remove final spaces and dots
     }
 
-    //if(filter_files && (check_wildcard(fname, filter_files) < 0)) return(0);
+    //if (filter_files && (check_wildcard(fname, filter_files) < 0)) return(0);
     //printf("  %08x %-10u %s\n", offset, size, fname);
 
     fname = create_dir(fname);
-    if(check_overwrite(fname) < 0) return(0);
+    if (check_overwrite(fname) < 0) return(0);
 
     dumpa(fname, data, size, more, more_size);
 
@@ -1701,25 +1701,25 @@ u64 unzip(u8 *in, u64 insz, u8 *out, u64 outsz) {
     z_stream *z;
 
 #define UNZIP_INIT(X,Y) \
-    if(!z_##X) { \
+    if (!z_##X) { \
         z_##X = calloc(1, sizeof(z_stream)); \
-        if(!z_##X) std_err(); \
+        if (!z_##X) std_err(); \
         z_##X->zalloc = (alloc_func)0; \
         z_##X->zfree  = (free_func)0; \
         z_##X->opaque = (voidpf)0; \
-        if(inflateInit2(z_##X, Y)) { \
+        if (inflateInit2(z_##X, Y)) { \
             printf("\nError: "#X" initialization error\n"); \
             exit(1); \
         } \
     }
 #define UNZIP_END(X) \
-        if(z_##X) { \
+        if (z_##X) { \
             inflateEnd(z_##X); \
             FREE(z_##X) \
         }
 
-    if(!insz || !outsz) return(0);
-    if(!in && !out) {
+    if (!insz || !outsz) return(0);
+    if (!in && !out) {
         UNZIP_END(zlib)
         UNZIP_END(deflate)
         return(-1);
@@ -1735,8 +1735,8 @@ redo:
     z->avail_in  = insz;
     z->next_out  = out;
     z->avail_out = outsz;
-    if(inflate(z, Z_FINISH) != Z_STREAM_END) {
-        if(z == z_zlib) {
+    if (inflate(z, Z_FINISH) != Z_STREAM_END) {
+        if (z == z_zlib) {
             z = z_deflate;
             goto redo;
         }
@@ -1753,23 +1753,23 @@ int check_wildcard(u8 *fname, u8 *wildcard) {
             *w,
             *a;
 
-    if(!wildcard) return(0);
+    if (!wildcard) return(0);
     f = fname;
     w = wildcard;
     a = NULL;
     while(*f || *w) {
-        if(!*w && !a) return(-1);
-        if(*w == '?') {
-            if(!*f) break;
+        if (!*w && !a) return(-1);
+        if (*w == '?') {
+            if (!*f) break;
             w++;
             f++;
-        } else if(*w == '*') {
+        } else if (*w == '*') {
             w++;
             a = w;
         } else {
-            if(!*f) break;
-            if(tolower(*f) != tolower(*w)) {
-                if(!a) return(-1);
+            if (!*f) break;
+            if (tolower(*f) != tolower(*w)) {
+                if (!a) return(-1);
                 f++;
                 w = a;
             } else {
@@ -1778,7 +1778,7 @@ int check_wildcard(u8 *fname, u8 *wildcard) {
             }
         }
     }
-    if(*f || *w) return(-1);
+    if (*f || *w) return(-1);
     return(0);
 }
 
@@ -1789,19 +1789,19 @@ u8 *create_dir(u8 *fname) {
             *l;
 
     p = strchr(fname, ':'); // unused
-    if(p) {
+    if (p) {
         *p = '_';
         fname = p + 1;
     }
-    for(p = fname; *p && strchr("\\/. \t:", *p); p++) *p = '_';
+    for (p = fname; *p && strchr("\\/. \t:", *p); p++) *p = '_';
     fname = p;
 
-    for(p = fname; ; p = l + 1) {
-        for(l = p; *l && (*l != '\\') && (*l != '/'); l++);
-        if(!*l) break;
+    for (p = fname; ; p = l + 1) {
+        for (l = p; *l && (*l != '\\') && (*l != '/'); l++);
+        if (!*l) break;
         *l = 0;
 
-        if(!strcmp(p, "..")) {
+        if (!strcmp(p, "..")) {
             p[0] = '_';
             p[1] = '_';
         }
@@ -1818,15 +1818,15 @@ int check_overwrite(u8 *fname) {
     FILE    *fd;
     u8      ans[16];
 
-    if(force_overwrite) return(0);
-    if(!fname) return(0);
+    if (force_overwrite) return(0);
+    if (!fname) return(0);
     fd = fopen(fname, "rb");
-    if(!fd) return(0);
+    if (!fd) return(0);
     fclose(fd);
     printf("- the file \"%s\" already exists\n  do you want to overwrite it (y/N/all)? ", fname);
     fgets(ans, sizeof(ans), stdin);
-    if(tolower(ans[0]) == 'y') return(0);
-    if(tolower(ans[0]) == 'a') {
+    if (tolower(ans[0]) == 'y') return(0);
+    if (tolower(ans[0]) == 'a') {
         force_overwrite = 1;
         return(0);
     }
@@ -1838,13 +1838,13 @@ int check_overwrite(u8 *fname) {
 void myalloc(u8 **data, u64 wantsize, u64 *currsize) {
     u64     tmp = 0;
 
-    if(!currsize) currsize = &tmp;
-    if(!wantsize) return;
-    if(wantsize <= *currsize) {
-        if(*currsize > 0) return;
+    if (!currsize) currsize = &tmp;
+    if (!wantsize) return;
+    if (wantsize <= *currsize) {
+        if (*currsize > 0) return;
     }
     *data = realloc(*data, wantsize + MEMMOVE_SIZE);
-    if(!*data) std_err();
+    if (!*data) std_err();
     memset(*data + *currsize, 0, wantsize - *currsize);
     *currsize = wantsize;
 }
@@ -1856,7 +1856,7 @@ u64 getxx(u8 *tmp, int bytes) {
     int     i;
 
     num = 0;
-    for(i = 0; i < bytes; i++) {
+    for (i = 0; i < bytes; i++) {
         num |= ((u64)tmp[i] << ((u64)i << (u64)3));
     }
     return(num);
@@ -1870,7 +1870,7 @@ u64 fgetxx(FILE *fd, int bytes) {
 
     myfr(fd, tmp, bytes);
     ret = getxx(tmp, bytes);
-    if(verbose) printf("  %08x: %08x\n", (u32)ftell(fd) - bytes, (u32)ret);
+    if (verbose) printf("  %08x: %08x\n", (u32)ftell(fd) - bytes, (u32)ret);
     return(ret);
 }
 
@@ -1880,14 +1880,14 @@ u64 myfr(FILE *fd, u8 *data, u64 size) {
     u64     len;
 
     g_dbg_offset = ftell(fd);
-    if(!data) {
-        for(len = 0; len < size; len++) {
-            if(fgetc(fd) < 0) break;
+    if (!data) {
+        for (len = 0; len < size; len++) {
+            if (fgetc(fd) < 0) break;
         }
     } else {
         len = fread(data, 1, size, fd);
     }
-    if(len != size) {
+    if (len != size) {
         printf("\nError: incomplete input file, can't read %u bytes\n", (u32)(size - len));
         exit(1);
     }
@@ -1899,7 +1899,7 @@ u64 myfr(FILE *fd, u8 *data, u64 size) {
 int putxx(u8 *data, u64 num, int bytes) {
     int     i;
 
-    for(i = 0; i < bytes; i++) {
+    for (i = 0; i < bytes; i++) {
         data[i] = (u64)num >> ((u64)i << (u64)3);
     }
     return(bytes);
@@ -1921,8 +1921,8 @@ void dumpa(u8 *fname, u8 *data, u64 size, u8 *more, int more_size) {
     FILE    *fdo;
 
     fdo = fopen(fname, "wb");
-    if(!fdo) std_err();
-    if(more_size > 0) myfw(fdo, more, more_size);
+    if (!fdo) std_err();
+    if (more_size > 0) myfw(fdo, more, more_size);
     myfw(fdo, data, size);
     fclose(fdo);
 }
@@ -1933,7 +1933,7 @@ u64 myfw(FILE *fd, u8 *data, u64 size) {
     u64     len;
 
     len = fwrite(data, 1, size, fd);
-    if(len != size) {
+    if (len != size) {
         printf("\nError: impossible to write %u bytes\n", (u32)(size - len));
         exit(1);
     }
@@ -1946,7 +1946,7 @@ u64 get_num(u8 *str) {
     //u64     offset;
     int     off32;  // currently this is not important
 
-    if(!strncmp(str, "0x", 2) || !strncmp(str, "0X", 2)) {
+    if (!strncmp(str, "0x", 2) || !strncmp(str, "0X", 2)) {
         sscanf(str + 2, "%x", &off32);
     } else {
         sscanf(str, "%u", &off32);
@@ -1960,5 +1960,3 @@ void std_err(void) {
     perror("Error");
     exit(1);
 }
-
-
