@@ -239,28 +239,46 @@ void print_examples(void)
 {
 	printf("\n"
 		"Examples:\n"
+	#ifdef WIN32
 		"  ttarchext.exe -m 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
 		"  ttarchext.exe -l 24 c:\\4_MonkeyIsland101_pc_tx.ttarch \"c:\\new folder\"\n"
 		"  ttarchext.exe -b -V 7 24 c:\\1_output.ttarch c:\\1_input_folder\n"
+	#else
+		"  ttarchext -m 24 4_MonkeyIsland101_pc_tx.ttarch new_dir/\n"
+		"  ttarchext -l 24 4_MonkeyIsland101_pc_tx.ttarch new_dir/\n"
+		"  ttarchext -b -V 7 24 1_output.ttarch 1_input_dir\n"
+	#endif
 		"\n"
 		"The tool can work also on single encrypted files like the prop files usually\n"
 		"located in the main folder or the various aud files, examples:\n"
+	#ifdef WIN32
 		"  ttarchext.exe -V 7 24 c:\\ttg_splash_a_telltale.d3dtx \"c:\\new folder\"\n"
 		"  ttarchext.exe -V 7 -e 0 24 \"c:\\new folder\\ttg_splash_a_telltale.d3dtx\" c:\\\n"
+	#else
+		"  ttarchext -V 7 24 ttg_splash_a_telltale.d3dtx new_dir\n"
+		"  ttarchext -V 7 -e 0 24 new_dir/ttg_splash_a_telltale.d3dtx ./\n"
+	#endif
 		"\n"
 		"Notes: from version 0.2 the tool performs the automatic decryption of lenc\n"
 		"       files to Lua and vice versa during the rebuilding\n"
 		"\n"
 		"Additional notes copy&pasted from the website of the tool:\n"
 		"\n"
-		"remember to use the -m option to dump the FONT and D3DTX files as DDS and the AUD as OGG but do NOT use this option if you plan to rebuild the ttarch archive!.\n"
+		"remember to use the -m option to dump the FONT and D3DTX files as DDS and the AUD as OGG but do NOT use this option if you plan to rebuild the ttarch archive!\n"
 		"the tool has also various options for listing the files without extracting them, overwriting the existent files, wildcards and other options (mainly debug stuff for myself).\n"
 		"examples for \"Tales of Monkey Island: Launch of the Screaming Narwhal\":\n"
 		"\n"
-		"  extraction: ttarchext.exe 24 \"C:\\...pc_launcheronly.ttarch\" c:\\output_folder\n"
+	#ifdef WIN32
+		"  extraction: ttarchext.exe 24 \"C:\\...\\pc_launcheronly.ttarch\" c:\\output_folder\n"
 		"  rebuilding: ttarchext.exe -b -V 7 24 \"C:\\...\\0.ttarch\" c:\\input_folder\n"
 		"  decrypt lenc: ttarchext 55 c:\\input_file.lenc c:\\output_folder\n"
 		"  encrypt lua: ttarchext -V 7 -e 0 55 c:\\input_file.lua c:\\output_folder\n"
+	#else
+		"  extraction: ttarchext 24 pc_launcheronly.ttarch output_dir\n"
+		"  rebuilding: ttarchext -b -V 7 24 0.ttarch input_dir\n"
+		"  decrypt lenc: ttarchext 55 input_file.lenc output_dir\n"
+		"  encrypt lua: ttarchext -V 7 -e 0 55 input_file.lua output_dir\n"
+	#endif
 		"\n"
 		"remember that if you have modified only a couple of files (for example english.langdb and one or images) you don't need to rebuild the whole archive but it's enough to build a new one called 0.ttarch containing ONLY the files you modifed, it will be read by the game like a patch and will occupy only a minimal amount of space.\n"
 		"note that the old versions of the TellTale games (so not those currently available on that website) are not supported because use different encryptions and sometimes format, and being old versions are NOT supported by me in any case.\n"
