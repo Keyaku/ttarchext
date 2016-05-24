@@ -1024,7 +1024,7 @@ u8 *ttarch_fgetss(FILE *fd) {
 u8 *ttarch_getname(FILE *fd, u8 **data) {
     static u64  buffsz  = 0;
     static u8   *buff   = NULL;
-    int     namesz;
+    u64 namesz;
 
     namesz = ttarch_getxx(fd, data, 4);
     myalloc(&buff, namesz + 1, &buffsz);
