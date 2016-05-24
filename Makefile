@@ -1,7 +1,9 @@
 DSTDIR = bld
 SRCDIR = src
 
-CFLAGS = -std=c99 -c -pedantic -O3 -flto -Wall -Wno-pointer-sign
+BUILD = release
+
+CFLAGS = -std=c99 -c -pedantic -flto -Wall -Wno-pointer-sign
 LDFLAGS = -lz
 
 ifeq ($(shell uname), Darwin)
@@ -9,6 +11,14 @@ ifeq ($(shell uname), Darwin)
 else
 	CC = gcc
 	CFLAGS += -fPIC
+endif
+
+ifeq ($(BUILD), debug)
+	CFLAGS  += -O0 -g -pg
+	LDFLAGS += -O0 -g -pg
+else
+	CFLAGS  += -O3
+	LDFLAGS += -O3
 endif
 
 TARGET = $(DSTDIR)/ttarchext
