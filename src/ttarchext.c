@@ -61,7 +61,7 @@ typedef uint64_t    u64;
 
 enum {
     EXT_TTARCH,
-    EXT_TTARCH2,
+    EXT_TTARCH2
 };
 
 
@@ -613,6 +613,7 @@ u8 *import_filename(u8 *fname)
         if (gamenum < 56) {  // the games before Tales from the Borderlands need the lenc extension
             myalloc(&buff, (ext - fname) + 16, &buffsz);
             sprintf(buff, "%.*s.lenc", ext - fname, fname);
+			// XXX: possible warn fix: "%.ld%s.lenc"
             return buff;
         }
     }
@@ -799,7 +800,7 @@ u32 rebuild_it(u8 *output_name, FILE *fdo)
             p += putxx(p, 0xfeedface, 4);
         }
         if (pad_it(p - info_table, 8) != info_size) {
-            printf("\nError: problem in the info_size calculated by ttarchext (%d, %d)\n", p - info_table, info_size);
+            printf("\nError: problem in the info_size calculated by ttarchext (%ld, %d)\n", p - info_table, info_size);
             exit(1);
         }
 
@@ -976,13 +977,12 @@ u64 crypt_it(FILE *fd, u8 *fname, u64 offset, int wanted_size /*signed!*/, int e
 
 
 u8 *string2key(u8 *data) {
-    int     i,
-            n;
-    u8      *ret;
+    u32 i, n;
+    u8 *ret;
 
     ret = strdup(data);
     for (i = 0; *data; i++) {
-        while(*data && ((*data <= ' ') || (*data == '\\') || (*data == 'x'))) data++;
+        while (*data && ((*data <= ' ') || (*data == '\\') || (*data == 'x'))) data++;
         if (sscanf(data, "%02x", &n) != 1) break;
         ret[i] = n;
         data += 2;
@@ -1950,8 +1950,8 @@ u64 myfw(FILE *fd, u8 *data, u64 size) {
 
 
 u64 get_num(u8 *str) {
-    //u64     offset;
-    int     off32;  // currently this is not important
+    //u64 offset;
+    u32 off32;  // currently this is not important
 
     if (!strncmp(str, "0x", 2) || !strncmp(str, "0X", 2)) {
         sscanf(str + 2, "%x", &off32);
