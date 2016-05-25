@@ -1487,14 +1487,15 @@ void xor(u8 *data, u64 datalen, int xornum) {
 }
 
 
-void blowfish(u8 *data, u64 datalen, int encrypt) {
-    static  blf_ctx *blowfish_ctx = NULL;
-    static  int old_version = -1;
+void blowfish(u8 *data, u64 datalen, int encrypt)
+{
+    static blf_ctx *blowfish_ctx = NULL;
+    static int old_version = -1;
 
     if (!blowfish_ctx || (version != old_version)) { // init
         if (!blowfish_ctx) {
-            blowfish_ctx = calloc(1, sizeof(blf_ctx));
-            if (!blowfish_ctx) std_err();
+            blowfish_ctx = calloc(1, sizeof(blowfish_ctx));
+            if (!blowfish_ctx) { std_err(); }
         }
         if (version >= 7) {
             blf_key7(blowfish_ctx, mykey, strlen(mykey));
@@ -1523,7 +1524,8 @@ void blowfish(u8 *data, u64 datalen, int encrypt) {
 }
 
 
-u8 *scan_search(u8 *buff, u64 *buffsz, u8 *find, int findsz) {
+u8 *scan_search(u8 *buff, u64 *buffsz, u8 *find, int findsz)
+{
 #define MAX_SCAN_SIZE   4096
 #define MAX_SCAN_CRYPT  8   // blowfish size
     u64     i,

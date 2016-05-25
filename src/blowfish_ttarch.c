@@ -285,10 +285,13 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
 	 unsigned long  datar;
 
 	/* initialise p & s-boxes without file read */
+	// FIXME: Invalid write of size 8 happening here
 	for (i = 0; i < N+2; i++) {
+		// Reminder: bc->P[18] & bfp[18]
 		bc->P[i] = bfp[i];
 	}
 	for (i = 0; i < 256; i++) {
+		// Reminder: bc->S[4][256]
 		bc->S[0][i] = ks0[i];
 		bc->S[1][i] = ks1[i];
 		bc->S[2][i] = ks2[i];
@@ -297,7 +300,7 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
     bc->S[0][118] = bswap(bc->S[0][118]);   // version7
 
 	j = 0;
-	for (i = 0; i < N + 2; ++i) {
+	for (i = 0; i < N+2; ++i) {
 		data = 0x00000000;
 		for (k = 0; k < 4; ++k) {
 			data = (data << 8) | key[j];

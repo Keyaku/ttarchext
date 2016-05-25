@@ -8,8 +8,8 @@ The following is a small explanation from the website author:
 
 Here is Bruce Schneier's code in C for his Blowfish algorithm. This version is fully ANSI compliant and contains the "missing" P-box values omitted from the book.
 ...
-This code may be freely distributed. 
-Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the code for readDataLine(). 
+This code may be freely distributed.
+Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the code for readDataLine().
 */
 
 #define UWORD32 unsigned long
@@ -17,8 +17,7 @@ Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the co
 
 #define MAXKEYBYTES 56          /* 448 bits */
 
-typedef struct
-{
+typedef struct {
 	unsigned long S[4][256], P[18];
 } blf_ctx;
 
