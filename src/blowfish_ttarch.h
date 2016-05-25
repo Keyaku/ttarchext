@@ -18,7 +18,8 @@ Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the co
 #define MAXKEYBYTES 56          /* 448 bits */
 
 typedef struct {
-	unsigned long S[4][256], P[18];
+	UWORD32 P[18];
+	UWORD32 S[4][256];
 } blf_ctx;
 
 unsigned long F(blf_ctx *, unsigned long x);
