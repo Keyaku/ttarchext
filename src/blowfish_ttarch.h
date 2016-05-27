@@ -17,9 +17,15 @@ Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the co
 
 #define MAXKEYBYTES 56          /* 448 bits */
 
+#ifdef DEBUG
+#define DBG_PRINT(...) fprintf(stderr, __VA_ARGS__ )
+#else
+#define DBG_PRINT(...)
+#endif
+
 typedef struct {
-	UWORD32 P[18];
 	UWORD32 S[4][256];
+	UWORD32 P[18];
 } blf_ctx;
 
 unsigned long F(blf_ctx *, unsigned long x);

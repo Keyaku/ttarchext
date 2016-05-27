@@ -13,7 +13,7 @@ else
 endif
 
 ifeq ($(BUILD), debug)
-	CFLAGS  += -O0 -g -pg
+	CFLAGS  += -O0 -g -pg -DDEBUG
 else
 	CFLAGS  += -O3
 	LDFLAGS += -O3
