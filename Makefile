@@ -1,4 +1,4 @@
-DSTDIR = bld
+OBJDIR = bld
 SRCDIR = src
 
 BUILD = release
@@ -7,28 +7,34 @@ CFLAGS = -std=c99 -c -pedantic -fPIC -flto -Wall -Wno-pointer-sign
 LDFLAGS = -lz
 
 ifeq ($(shell uname), Darwin)
-	CC = xcrun -sdk macosx clang
+	CC = gcc-5
 else
 	CC = gcc
 endif
 
+LD = $(CC)
+
 ifeq ($(BUILD), debug)
 	CFLAGS  += -O0 -g -pg -DDEBUG
+	LDFLAGS += -O0 -g
 else
 	CFLAGS  += -O3
 	LDFLAGS += -O3
 endif
 
-TARGET = $(DSTDIR)/ttarchext
-OBJECTS  = $(patsubst $(SRCDIR)/%.c, $(DSTDIR)/%.o, $(wildcard $(SRCDIR)/*.c))
+TARGET = $(OBJDIR)/ttarchext
 
-$(DSTDIR)/%.o: $(SRCDIR)/%.c
+OBJECTS  = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(wildcard $(SRCDIR)/*.c))
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(LD) $(LDFLAGS) -o $@ $^
 
 clean:
-	rm -rf $(DSTDIR)/*
+	rm -rf $(OBJDIR)/*
+
+.PHONY: all clean
