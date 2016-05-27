@@ -12,6 +12,9 @@ This code may be freely distributed.
 Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the code for readDataLine().
 */
 
+#ifndef BLF_TTARCH_H
+#define BLF_TTARCH_H
+
 #define UWORD32 unsigned long
 #define UBYTE08 unsigned char
 
@@ -43,3 +46,5 @@ short InitializeBlowfish7(blf_ctx *, unsigned char key[], int keybytes);
 void blf_enc7(blf_ctx *c, unsigned long *data, int blocks);
 void blf_dec7(blf_ctx *c, unsigned long *data, int blocks);
 void blf_key7(blf_ctx *c, unsigned char *key, int len);
+
+#endif // BLF_TTARCH_H

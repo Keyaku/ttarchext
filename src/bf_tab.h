@@ -13,6 +13,8 @@ Updated 29 July 2003: thanks to Mehul Motani for pointing out an error in the co
 
 /* bf_tab.h: Blowfish P-box and S-box tables */
 
+#ifndef BLF_TAB_H
+#define BLF_TAB_H
 
 static UWORD32 bfp[] = {
 	0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
@@ -286,3 +288,5 @@ static UWORD32 ks3[] = {
 	0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f,
 	0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
 };
+
+#endif // BLF_TAB_H
