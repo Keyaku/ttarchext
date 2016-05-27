@@ -1494,7 +1494,7 @@ void blowfish(u8 *data, u64 datalen, int encrypt)
 
     if (!blowfish_ctx || (version != old_version)) { // init
         if (!blowfish_ctx) {
-            blowfish_ctx = malloc(sizeof(blowfish_ctx));
+            blowfish_ctx = malloc(sizeof(*blowfish_ctx));
 			if (!blowfish_ctx) { std_err(); }
         }
         if (version >= 7) {

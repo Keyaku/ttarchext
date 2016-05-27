@@ -289,26 +289,15 @@ short InitializeBlowfish7(blf_ctx *bc, unsigned char key[], int keybytes)
 	 // unsigned long bc->S[4][256], bc->P[18], bfp[18]
 
 	/* initialise p & s-boxes without file read */
-	// FIXME: Invalid write of size 8 at P[0]
 	for (i = 0; i < N+2; i++) {
-		DBG_PRINT("%d ", i);
 		bc->P[i] = bfp[i];
 	}
-	DBG_PRINT("\n");
-	// FIXME: Invalid write of size 8 at the following banks:
-	// S[0][0], S[1][0], S[3][111]
 	for (i = 0; i < 256; i++) {
-		DBG_PRINT("[0][%d], ", i);
 		bc->S[0][i] = ks0[i];
-		DBG_PRINT("[1][%d], ", i);
 		bc->S[1][i] = ks1[i];
-		DBG_PRINT("[2][%d], ", i);
 		bc->S[2][i] = ks2[i];
-		DBG_PRINT("[3][%d], ", i);
 		bc->S[3][i] = ks3[i];
-		DBG_PRINT("\n");
 	}
-	DBG_PRINT("\n>>> is this thing on? <<<\n");
     bc->S[0][118] = bswap(bc->S[0][118]);   // version7
 
 	j = 0;
