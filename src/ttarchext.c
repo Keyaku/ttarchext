@@ -612,8 +612,7 @@ u8 *import_filename(u8 *fname)
     if (ext && !stricmp(ext, ".lua")) {
         if (gamenum < 56) {  // the games before Tales from the Borderlands need the lenc extension
             myalloc(&buff, (ext - fname) + 16, &buffsz);
-            sprintf(buff, "%.*s.lenc", ext - fname, fname);
-			// XXX: possible warn fix: "%.ld%s.lenc"
+            sprintf(buff, "%.*s.lenc", (int) (ext - fname), fname);
             return buff;
         }
     }

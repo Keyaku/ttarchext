@@ -3,11 +3,11 @@ SRCDIR = src
 
 BUILD = release
 
-CFLAGS = -std=c99 -c -pedantic -fPIC -flto -Wall -Wno-pointer-sign
+CFLAGS = -std=c99 -c -pedantic -fPIC -Wall -Wno-pointer-sign
 LDFLAGS = -lz
 
 ifeq ($(shell uname), Darwin)
-	CC = gcc-5
+	CC = xcrun -sdk macosx clang
 else
 	CC = gcc
 endif
